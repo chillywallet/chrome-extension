@@ -128,18 +128,16 @@ export function matchEmail(email: string, filters: string[]) {
  * which as a millisecond epoch renders as Jan 1 1970. The old backend returned
  * epoch-millis strings, so a bare parseInt used to be sufficient.
  */
-export const getDateTimeStringFromTimestamp = (
-    timestamp: string | number | null | undefined,
-) => {
+export const parseTimestamp = (timestamp: string | number | null | undefined): Date | null => {
     try {
         if (timestamp === null || timestamp === undefined || timestamp === '') {
-            return 'N/A';
+            return null;
         }
 
         const raw = typeof timestamp === 'string' ? timestamp.trim() : timestamp;
 
         if (raw === '') {
-            return 'N/A';
+            return null;
         }
 
         let date: Date;
@@ -148,7 +146,7 @@ export const getDateTimeStringFromTimestamp = (
             const value = Number(raw);
 
             if (!Number.isFinite(value) || value <= 0) {
-                return 'N/A';
+                return null;
             }
 
             // Anything below 1e12 is seconds (1e12 ms is year 2001, 1e12 s is year 33658),
@@ -158,16 +156,28 @@ export const getDateTimeStringFromTimestamp = (
             date = new Date(raw);
         }
 
-        if (Number.isNaN(date.getTime())) {
-            return 'N/A';
-        }
-
-        return toLocaleDateTimeString(date);
+        return Number.isNaN(date.getTime()) ? null : date;
     } catch (error) {
         logger.log(timestamp, error);
+        return null;
     }
+};
 
-    return 'N/A';
+export const getDateTimeStringFromTimestamp = (
+    timestamp: string | number | null | undefined,
+) => {
+    const date = parseTimestamp(timestamp);
+
+    return date ? toLocaleDateTimeString(date) : 'N/A';
+};
+
+/** Time without the date — for lists that already group entries under a day heading. */
+export const getTimeStringFromTimestamp = (timestamp: string | number | null | undefined) => {
+    const date = parseTimestamp(timestamp);
+
+    return date
+        ? date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+        : 'N/A';
 };
 
 export const formatAddress = (address: string, number: number = 4) => {

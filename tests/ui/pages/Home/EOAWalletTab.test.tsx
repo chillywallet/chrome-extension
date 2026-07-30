@@ -464,15 +464,6 @@ describe('EOAWalletTab', () => {
         await screen.findByTestId('nft-portfolio');
     });
 
-    it('renders the Transactions tab when selected', async () => {
-        render(
-            renderWithHomeProviders(<EOAWalletTab {...props} />, {
-                state: { globalState: baseGlobal },
-                routes: { subTabIndex: 2 },
-            }),
-        );
-        await screen.findByTestId('tx-portfolio');
-    });
 
     it('calls setSubTabIndex when a tab is clicked', async () => {
         const setSubTabIndex = jest.fn();
@@ -482,8 +473,8 @@ describe('EOAWalletTab', () => {
                 routes: { setSubTabIndex, subTabIndex: 0 },
             }),
         );
-        await screen.findByText('NFTs');
-        fireEvent.click(screen.getByText('NFTs'));
+        await screen.findByText('Collectibles');
+        fireEvent.click(screen.getByText('Collectibles'));
         expect(setSubTabIndex).toHaveBeenCalled();
     });
 

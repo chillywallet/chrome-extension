@@ -520,6 +520,12 @@ import Toast from '../../../src/ui/components/Toast';
 import { useRoutesData } from '../../../src/ui/pages/RoutesProvider';
 import Swap from '../../../src/ui/pages/Swap';
 
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
+    // Swap renders BottomNav, which reads the current route.
+    useLocation: () => ({ pathname: '/swap' }),
+}));
+
 const WALLET_ADDRESS = '0xf39Fd6e51aaD88F6F4cE6aB8827279cffFb92266';
 const NATIVE_TOKEN = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 
@@ -823,14 +829,9 @@ describe('Swap page', () => {
             expect(screen.getAllByText(/USDC/).length).toBeGreaterThan(0),
         );
 
-        const allBtns = screen.getAllByRole('button');
-        const switchBtn = allBtns.find(
-            b =>
-                b.className.includes('rounded-full') &&
-                b.className.includes('h-[35px]'),
-        );
+        const switchBtn = screen.getByRole('button', { name: 'Switch swap direction' });
         expect(switchBtn).toBeTruthy();
-        await userEvent.click(switchBtn!);
+        await userEvent.click(switchBtn);
     });
 
     it('handles a quote rejection', async () => {

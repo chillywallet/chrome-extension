@@ -73,6 +73,7 @@ import AssetLogo from '../components/AssetLogo';
 import CoinSelectorModal from '../components/CoinSelectorModal';
 import CustomCoinSelectorModal from '../components/CustomCoinSelectorModal';
 import GasFee from '../components/GasFee';
+import BottomNav from '../components/BottomNav';
 import Header from '../components/Header';
 import NetworkMenu from '../components/NetworkMenu';
 import PercentageSlider from '../components/PercentageSlider';
@@ -1674,8 +1675,9 @@ const Swap = React.memo<Props>((props: Props) => {
             />
 
             <div className="flex flex-col flex-1 p-5 overflow-auto">
-                {/* Main Swap Card */}
-                <div className="bg-white dark:bg-darker rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-3 px-5 mb-3">
+                {/* Pay / receive panels, joined by an overlapping direction control. */}
+                <div className="relative mb-3">
+                <div className="frost-card py-4 px-5">
                     {/* You Pay Section */}
                     <div className="flex items-center justify-between space-x-4">
                         <div className="flex flex-col gap-2 min-w-[120px]">
@@ -1785,25 +1787,23 @@ const Swap = React.memo<Props>((props: Props) => {
                         </div>
                     </div>
 
-                    {/* Separator */}
-                    {loading ? (
-                        <div className="flex items-center justify-center space-x-2 mt-2">
-                            <div className="w-full h-px bg-gray-300 dark:bg-gray-600"></div>
-                            <div className="h-[35px] w-[35px] shrink-0 animate-pulse bg-placeholder rounded-full"></div>
-                            <div className="w-full h-px bg-gray-300 dark:bg-gray-600"></div>
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-center space-x-2 mt-2">
-                            <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600"></div>
-                            <button
-                                onClick={onSwitchPress}
-                                className="flex items-center justify-center h-[35px] w-[35px] border-[1px] border-primary rounded-full text-primary hover:bg-primary hover:text-white transition-all shadow-sm hover:shadow-md">
-                                <PiArrowsVerticalBold size={20} />
-                            </button>
-                            <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600"></div>
-                        </div>
-                    )}
+                </div>
 
+                {/* Direction control, straddling the seam between the two panels. */}
+                <div className="relative h-0 z-10 flex justify-center">
+                    {loading ? (
+                        <div className="absolute -top-[22px] h-11 w-11 animate-pulse bg-placeholder rounded-full border-4 border-white dark:border-darker" />
+                    ) : (
+                        <button
+                            onClick={onSwitchPress}
+                            aria-label="Switch swap direction"
+                            className="absolute -top-[22px] flex items-center justify-center h-11 w-11 rounded-full bg-primary dark:bg-accent text-white dark:text-darker border-4 border-white dark:border-darker hover:bg-primarydark dark:hover:bg-primary transition-colors">
+                            <PiArrowsVerticalBold size={20} />
+                        </button>
+                    )}
+                </div>
+
+                <div className="frost-card py-4 px-5 mt-2">
                     {/* You Receive Section */}
                     <div className="flex items-center justify-between space-x-4">
                         <div className="flex flex-col gap-2 min-w-[120px]">
@@ -1861,8 +1861,9 @@ const Swap = React.memo<Props>((props: Props) => {
                         </div>
                     </div>
                 </div>
+                </div>
 
-                <div className="flex flex-col bg-white gap-2 dark:bg-darker rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 mb-4">
+                <div className="frost-card flex flex-col gap-2 p-4 mb-4">
                     {((!approvingAllowance && !needApproveAllowance) ||
                         supportApproveAndSwap) && (
                         <>
@@ -1947,8 +1948,10 @@ const Swap = React.memo<Props>((props: Props) => {
                 )}
 
                 {/* Action Button */}
+                <div className="sticky bottom-0 -mx-5 mt-auto px-5 pt-3 pb-1 bg-white/90 dark:bg-dark/90 backdrop-blur-md">
                 {supportApproveAndSwap ? (
                     <button
+                        data-testid="swap-submit"
                         className="btn btn-primary w-full h-14 min-h-[56px] text-base font-semibold shadow-lg hover:shadow-xl transition-shadow"
                         onClick={() => void wrapSubmit(() => onSwapPress())}
                         disabled={buttonDisabled}>
@@ -1958,7 +1961,8 @@ const Swap = React.memo<Props>((props: Props) => {
                     <div className="mb-4 mt-2">
                         {approvingAllowance ? (
                             <button
-                                className="btn btn-primary w-full h-14 min-h-[56px] text-base font-semibold shadow-lg"
+                                data-testid="swap-submit"
+                        className="btn btn-primary w-full h-14 min-h-[56px] text-base font-semibold shadow-lg"
                                 disabled>
                                 <div className="flex items-center justify-center gap-2">
                                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -1968,13 +1972,15 @@ const Swap = React.memo<Props>((props: Props) => {
                         ) : needApproveAllowance ? (
                             <button
                                 disabled={!!error || loadingGasLimit}
-                                className="btn btn-primary w-full h-14 min-h-[56px] text-base font-semibold shadow-lg hover:shadow-xl transition-shadow"
+                                data-testid="swap-submit"
+                        className="btn btn-primary w-full h-14 min-h-[56px] text-base font-semibold shadow-lg hover:shadow-xl transition-shadow"
                                 onClick={() => void wrapSubmit(() => onGivePermissionPress())}>
                                 Give permission to swap {fromCoin?.symbol}
                             </button>
                         ) : (
                             <button
-                                className="btn btn-primary w-full h-14 min-h-[56px] text-base font-semibold shadow-lg hover:shadow-xl transition-shadow"
+                                data-testid="swap-submit"
+                        className="btn btn-primary w-full h-14 min-h-[56px] text-base font-semibold shadow-lg hover:shadow-xl transition-shadow"
                                 onClick={() => void wrapSubmit(() => onSwapPress())}
                                 disabled={buttonDisabled}>
                                 {needApproveAllowance ? 'Approve & Swap' : 'Swap'}
@@ -1982,6 +1988,7 @@ const Swap = React.memo<Props>((props: Props) => {
                         )}
                     </div>
                 )}
+                </div>
 
                 {/* Powered By Section */}
                 {poweredBy ? (
@@ -2046,6 +2053,8 @@ const Swap = React.memo<Props>((props: Props) => {
             />
 
             {hardwareModal}
+
+            <BottomNav />
         </div>
     );
 });

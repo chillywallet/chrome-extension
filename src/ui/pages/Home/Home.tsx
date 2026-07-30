@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AiFillCaretDown } from 'react-icons/ai';
-import { BsBarChartLineFill, BsWalletFill } from 'react-icons/bs';
+import { BsBarChartLineFill } from 'react-icons/bs';
 import { MdOutlineSettings } from 'react-icons/md';
-import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
 import { FaAddressBook, FaExpand, FaLock } from 'react-icons/fa';
 import { TbLayoutSidebarRight } from 'react-icons/tb';
@@ -15,15 +14,13 @@ import {
     LEDGER_ERR_NO_LEDGER_SELECTED,
 } from '../../../lib/ledger/ledgerErrorMessages';
 import { ENVIRONMENT_TYPE_FULLSCREEN, ENVIRONMENT_TYPE_POPUP } from '../../../shared/constants/app';
-import { CONTACT_ROUTE, SETTINGS_ROUTE } from '../../../shared/constants/routes';
-import EventType from '../../../shared/types/EventType';
-import { HomeTabType } from '../../../shared/types/Home';
 import {
-    ChillyAccount,
-    ChillyWallet,
-    PendingTransaction,
-    Transaction,
-} from '../../../shared/types/Wallet';
+    CONTACT_ROUTE,
+    EXPLORE_ROUTE,
+    SETTINGS_ROUTE,
+} from '../../../shared/constants/routes';
+import EventType from '../../../shared/types/EventType';
+import { ChillyAccount, ChillyWallet } from '../../../shared/types/Wallet';
 import eventManager from '../../../shared/utils/eventManager';
 import { getEnvironmentType } from '../../../shared/utils/utils';
 import {
@@ -53,18 +50,13 @@ import EmojiView from '../../components/EmojiView';
 import HardwareSelectAddressesModal from '../../components/HardwareSelectAddressesModal';
 import NetworkMenu from '../../components/NetworkMenu';
 import NotConnectedSiteModal from '../../components/NotConnectedSiteModal';
-import PendingTransactionModal from '../../components/PendingTransactionModal';
 import PrivateKeyModal from '../../components/PrivateKeyModal';
 import SeedPhraseModal from '../../components/SeedPhraseModal';
-import SpeedUpAndCancelModal, {
-    SpeedUpAndCancelTxData,
-} from '../../components/SpeedUpAndCancelModal';
 import TextTruncate from '../../components/TextTruncate';
 import Toast from '../../components/Toast';
-import TransactionDetailModal from '../../components/TransactionDetailModal';
 import { useRoutesData } from '../RoutesProvider';
+import BottomNav from '../../components/BottomNav';
 import EOAWalletTab from './EOAWalletTab';
-import ExploreTab from './ExploreTab';
 import HomeProvider from './HomeProvider';
 
 export type HomeProps = {};
@@ -93,13 +85,8 @@ const GLOBAL_CONTEXT_MENUS = [
 ];
 
 export default React.memo<HomeProps>((props: HomeProps) => {
-    const {
-        setHomeTabIndex,
-        homeTabIndex,
-        connectedAccounts,
-        isShowNotConnectedModal,
-        setIsShowNotConnectedModal,
-    } = useRoutesData();
+    const { connectedAccounts, isShowNotConnectedModal, setIsShowNotConnectedModal } =
+        useRoutesData();
 
     const { exploreRedDotDate, exploreRedDot } = usePreferences();
 
@@ -163,26 +150,11 @@ export default React.memo<HomeProps>((props: HomeProps) => {
     }>({
         isShowEditWallet: false,
     });
-    const [{ isShowTransactionDetail, transactionDetailData }, setTransactionDetail] = useState<{
-        transactionDetailData?: Transaction;
-        isShowTransactionDetail: boolean;
-    }>({
-        isShowTransactionDetail: false,
-    });
-    const [{ isShowPendingTxDetail, pendingTxDetailData }, setPendingTxDetail] = useState<{
-        pendingTxDetailData?: PendingTransaction;
-        isShowPendingTxDetail: boolean;
-    }>({
-        isShowPendingTxDetail: false,
-    });
     const [{ isShowAddCustomCoinModal, addingWalletAddress }, setAddCustomCoinData] = useState<{
         addingWalletAddress?: string;
         isShowAddCustomCoinModal: boolean;
     }>({
         isShowAddCustomCoinModal: false,
-    });
-    const [cancelSpeedUpTxData, setCancelSpeedUpTxData] = useState<SpeedUpAndCancelTxData>({
-        visible: false,
     });
     const [showSidePanelButton, setShowSidePanelButton] = useState(false);
     const [isRunningInIncognito, setIsRunningInIncognito] = useState(false);
@@ -222,14 +194,6 @@ export default React.memo<HomeProps>((props: HomeProps) => {
         [dispatch, history],
     );
 
-    const onTransactionPress = useCallback((transaction: Transaction) => {
-        setTransactionDetail({ transactionDetailData: transaction, isShowTransactionDetail: true });
-    }, []);
-
-    const onPendingTransactionPress = useCallback((transaction: PendingTransaction) => {
-        setPendingTxDetail({ isShowPendingTxDetail: true, pendingTxDetailData: transaction });
-    }, []);
-
     const onAccountPress = useCallback(
         (account: ChillyAccount, wallet: ChillyWallet) => {
             if (currentWallet && currentWallet.id !== wallet.id) {
@@ -258,13 +222,6 @@ export default React.memo<HomeProps>((props: HomeProps) => {
         setIsShowAccountMenu(true);
         setEditAccountData({ isShowEditAccount: false });
     }, []);
-
-    const onTabPress = useCallback(
-        (index: number) => {
-            setHomeTabIndex(index);
-        },
-        [setHomeTabIndex],
-    );
 
     const handleHardwareAddAccountModalClose = useCallback(async () => {
         setHardwareAddAccountModal({ visible: false, walletId: null, hardware: 'ledger' });
@@ -473,6 +430,17 @@ export default React.memo<HomeProps>((props: HomeProps) => {
                                 className="text-gray-400 dark:text-gray-500"
                             />
                         </div>
+                        <button
+                            type="button"
+                            data-testid="open-explore"
+                            aria-label="Explore"
+                            className="relative flex w-8 h-8 justify-center items-center rounded-full hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+                            onClick={() => history.push(EXPLORE_ROUTE)}>
+                            <BsBarChartLineFill size={16} />
+                            {exploreRedDot && (
+                                <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full" />
+                            )}
+                        </button>
                         <ContextMenu
                             id="home-context-menu"
                             placeholder={
@@ -508,45 +476,8 @@ export default React.memo<HomeProps>((props: HomeProps) => {
                         )}
                     </div>
                 </div>
-                <Tabs
-                    onSelect={onTabPress}
-                    selectedIndex={homeTabIndex}
-                    selectedTabClassName="bottom-tab-selected-tab-class-name"
-                    selectedTabPanelClassName="tab-selected-tab-panel-class-name"
-                    className="tab-class-name">
-                    <TabPanel>
-                        <ExploreTab />
-                    </TabPanel>
-                    <TabPanel>
-                        <EOAWalletTab
-                            setIsShowConnectedSites={setIsShowConnectedSites}
-                            onTransactionPress={onTransactionPress}
-                            onPendingTransactionPress={onPendingTransactionPress}
-                            setCancelSpeedUpTxData={setCancelSpeedUpTxData}
-                        />
-                    </TabPanel>
-                    <TabList className="bottom-tab-tablist">
-                        <Tab className="bottom-tab-tablist-tab">
-                            <div className="flex flex-col items-center">
-                                <div className="flex flex-col relative justify-center items-center">
-                                    <BsBarChartLineFill className="text-lg" />
-                                    <p className="text-xs mt-1">{HomeTabType.Explore}</p>
-                                    {exploreRedDot && (
-                                        <div className="w-2 h-2 bg-red-500 rounded-full absolute top-0 right-[6px]" />
-                                    )}
-                                </div>
-                            </div>
-                        </Tab>
-                        <Tab className="bottom-tab-tablist-tab">
-                            <div className="flex flex-col items-center">
-                                <BsWalletFill className="text-lg" />
-                                <p className="text-xs mt-1 text-center">
-                                    {HomeTabType.LegacyWallet}
-                                </p>
-                            </div>
-                        </Tab>
-                    </TabList>
-                </Tabs>
+                <EOAWalletTab setIsShowConnectedSites={setIsShowConnectedSites} />
+                <BottomNav />
 
                 <NetworkMenu
                     visible={isShowNetworkMenu}
@@ -618,20 +549,6 @@ export default React.memo<HomeProps>((props: HomeProps) => {
                     account={showPrivateKeyAccount}
                     visible={isShowPrivateKey}
                     onClosePress={() => setShowPrivateKeyData({ isShowPrivateKey: false })}
-                />
-                <SpeedUpAndCancelModal
-                    {...cancelSpeedUpTxData}
-                    onCloseRequest={() => setCancelSpeedUpTxData({ visible: false })}
-                />
-                <TransactionDetailModal
-                    visible={isShowTransactionDetail}
-                    data={transactionDetailData}
-                    onClosePress={() => setTransactionDetail({ isShowTransactionDetail: false })}
-                />
-                <PendingTransactionModal
-                    visible={isShowPendingTxDetail}
-                    data={pendingTxDetailData}
-                    onClosePress={() => setPendingTxDetail({ isShowPendingTxDetail: false })}
                 />
                 <NotConnectedSiteModal
                     visible={isShowNotConnectedModal}

@@ -5,6 +5,7 @@ import { PENDING_TX_EXPIRED_TIME } from '../../shared/constants/common';
 import EventType from '../../shared/types/EventType';
 import { PendingTransaction, Transaction } from '../../shared/types/Wallet';
 import eventManager from '../../shared/utils/eventManager';
+import { parseTimestamp } from '../../shared/utils/string';
 import { removePendingTransactions } from '../../store/actions/uiActions';
 import {
     usePendingTransactions,
@@ -24,6 +25,20 @@ type Props = {
     walletAddress: string;
     containerClass: string;
     setCancelSpeedUpTxData: (data: SpeedUpAndCancelTxData) => void;
+    /** Render as day-grouped timeline sections instead of one flat list. */
+    grouped?: boolean;
+};
+
+/** "Today" / "Yesterday" / "Mar 4, 2026" — the heading above each timeline group. */
+const dayLabel = (date: Date) => {
+    const day = moment(date).startOf('day');
+    const today = moment().startOf('day');
+    const diff = today.diff(day, 'days');
+
+    if (diff === 0) return 'Today';
+    if (diff === 1) return 'Yesterday';
+
+    return day.format('MMM D, YYYY');
 };
 
 export default React.memo<Props>((props: Props) => {
@@ -34,6 +49,7 @@ export default React.memo<Props>((props: Props) => {
         onPendingTransactionPress,
         walletAddress,
         setCancelSpeedUpTxData,
+        grouped = false,
     } = props;
 
     const dispatch = useAppDispatch();
@@ -138,8 +154,34 @@ export default React.memo<Props>((props: Props) => {
         };
     }, [onTransactionPress, transactions]);
 
+    /**
+     * Consecutive runs sharing a calendar day. The list already arrives newest-first,
+     * so a single pass preserves that order without sorting.
+     */
+    const dayGroups = useMemo(() => {
+        if (!grouped) {
+            return [];
+        }
+
+        const groups: { label: string; items: Transaction[] }[] = [];
+
+        transactionsWithCoins.forEach(tx => {
+            const date = parseTimestamp(tx.timestamp);
+            const label = date ? dayLabel(date) : 'Unknown date';
+            const last = groups[groups.length - 1];
+
+            if (last && last.label === label) {
+                last.items.push(tx);
+            } else {
+                groups.push({ label, items: [tx] });
+            }
+        });
+
+        return groups;
+    }, [grouped, transactionsWithCoins]);
+
     return (
-        <div className="divide-y dark:divide-darker">
+        <div className={grouped ? '' : 'divide-y dark:divide-darker'}>
             {unfinishedTransactions.map((_history, index) => (
                 <PendingTransactionCard
                     key={index}
@@ -149,9 +191,31 @@ export default React.memo<Props>((props: Props) => {
                 />
             ))}
 
-            {transactionsWithCoins.map((_history, index) => (
-                <TransactionCard key={index} data={_history} onPress={onTransactionPress} />
-            ))}
+            {grouped
+                ? dayGroups.map(group => (
+                      <section key={group.label} className="mb-4">
+                          <h2 className="px-4 pb-2 text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                              {group.label}
+                          </h2>
+                          <div className="timeline-rail mx-4">
+                              {group.items.map((_history, index) => (
+                                  <div key={index} className="relative mb-2 last:mb-0">
+                                      <span className="timeline-node" aria-hidden="true" />
+                                      <div className="frost-card overflow-hidden">
+                                          <TransactionCard
+                                              timeOnly
+                                              data={_history}
+                                              onPress={onTransactionPress}
+                                          />
+                                      </div>
+                                  </div>
+                              ))}
+                          </div>
+                      </section>
+                  ))
+                : transactionsWithCoins.map((_history, index) => (
+                      <TransactionCard key={index} data={_history} onPress={onTransactionPress} />
+                  ))}
 
             {!isLoading && unfinishedTransactions.length + transactionsWithCoins.length === 0 && (
                 <p className="text-sm text-gray-400 text-center pt-3">There are no transactions</p>

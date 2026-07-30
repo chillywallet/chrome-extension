@@ -125,6 +125,44 @@
     @apply rounded-2xl bg-white dark:bg-dark border border-slate-200 dark:border-darkline/60;
 }
 
+/*
+ * Floating action capsule on Home: one pill holding the primary actions, split by
+ * hairlines. The bloom is the ice accent rather than the reference design's purple.
+ */
+.action-capsule {
+    @apply flex flex-row items-stretch w-full rounded-full overflow-hidden bg-white dark:bg-dark border border-slate-200 dark:border-darkline/60;
+    box-shadow: 0 0 20px -6px rgba(105, 196, 238, 0.35);
+}
+
+.action-capsule-item {
+    @apply flex flex-1 flex-col items-center justify-center gap-1 py-3 min-w-0 transition-colors;
+    @apply text-primary dark:text-accent;
+    @apply enabled:hover:bg-slate-50 dark:enabled:hover:bg-white/[0.06];
+    @apply disabled:opacity-40;
+}
+
+.action-capsule-item + .action-capsule-item {
+    @apply border-l border-slate-200 dark:border-darkline/60;
+}
+
+/*
+ * Activity timeline: a hairline rail down the left of each day group, with a node
+ * per entry. The rail is drawn on the group so it spans the gaps between cards.
+ */
+.timeline-rail {
+    @apply relative pl-6;
+}
+
+.timeline-rail::before {
+    content: '';
+    @apply absolute left-[5px] top-2 bottom-2 w-px bg-slate-200 dark:bg-darkline;
+}
+
+.timeline-node {
+    @apply absolute left-0 top-6 w-[11px] h-[11px] rounded-full border-2;
+    @apply border-white dark:border-darker bg-primary dark:bg-accent;
+}
+
 .box-container {
     @apply w-full sm:max-w-[640px] md:max-w-[768px] lg:max-w-[1024px] xl:max-w-[1280px];
 }

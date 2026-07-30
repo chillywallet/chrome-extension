@@ -10,6 +10,7 @@ import eventManager from '../../../../src/shared/utils/eventManager';
 import EventType from '../../../../src/shared/types/EventType';
 import {
     CONTACT_ROUTE,
+    EXPLORE_ROUTE,
     PROMO_CODE_ROUTE,
     QUESTS_ROUTE,
     REFER_FRIENDS_ROUTE,
@@ -356,7 +357,7 @@ describe('Home', () => {
         });
     });
 
-    it('renders network chip and bottom tabs', async () => {
+    it('renders the network chip and the bottom navigation', async () => {
         render(
             renderWithHomeProviders(<Home />, {
                 routes: { homeTabIndex: 0 },
@@ -375,8 +376,11 @@ describe('Home', () => {
         await waitFor(() => {
             expect(screen.getByText(DEFAULT_CHAIN.short_name)).toBeInTheDocument();
         });
-        expect(screen.getAllByText(HomeTabType.Explore).length).toBeGreaterThan(0);
-        expect(screen.getByText(HomeTabType.LegacyWallet)).toBeInTheDocument();
+        expect(screen.getByTestId('nav-home')).toBeInTheDocument();
+        expect(screen.getByTestId('nav-swap')).toBeInTheDocument();
+        expect(screen.getByTestId('nav-activity')).toBeInTheDocument();
+        expect(screen.getByTestId('nav-settings')).toBeInTheDocument();
+        expect(screen.getByTestId('open-explore')).toBeInTheDocument();
         expect(screen.queryByText(HomeTabType.SmartWallet)).not.toBeInTheDocument();
         expect(screen.queryByText(HomeTabType.Schedule)).not.toBeInTheDocument();
     });
@@ -534,32 +538,8 @@ describe('Home', () => {
 
 
 
-    it('opens transaction detail modal from wallet tab and closes it', async () => {
-        render(renderWithHomeProviders(<Home />, { routes: { homeTabIndex: 1 } }));
-        await screen.findByTestId('eoa-tab');
-        await userEvent.click(screen.getByTestId('eoa-tx-press'));
-        expect(screen.getByTestId('tx-detail')).toBeInTheDocument();
-        await userEvent.click(screen.getByTestId('tx-detail-close'));
-        expect(screen.queryByTestId('tx-detail')).not.toBeInTheDocument();
-    });
 
-    it('opens pending transaction modal and closes it', async () => {
-        render(renderWithHomeProviders(<Home />, { routes: { homeTabIndex: 1 } }));
-        await screen.findByTestId('eoa-tab');
-        await userEvent.click(screen.getByTestId('eoa-pending-tx-press'));
-        expect(screen.getByTestId('pending-tx')).toBeInTheDocument();
-        await userEvent.click(screen.getByTestId('pending-tx-close'));
-        expect(screen.queryByTestId('pending-tx')).not.toBeInTheDocument();
-    });
 
-    it('opens speed up modal and closes it', async () => {
-        render(renderWithHomeProviders(<Home />, { routes: { homeTabIndex: 1 } }));
-        await screen.findByTestId('eoa-tab');
-        await userEvent.click(screen.getByTestId('eoa-cancel-speedup'));
-        expect(screen.getByTestId('speed-up')).toBeInTheDocument();
-        await userEvent.click(screen.getByTestId('speed-up-close'));
-        expect(screen.queryByTestId('speed-up')).not.toBeInTheDocument();
-    });
 
     it('opens connected sites modal and closes it', async () => {
         render(renderWithHomeProviders(<Home />, { routes: { homeTabIndex: 1 } }));
@@ -759,17 +739,11 @@ describe('Home', () => {
         await screen.findByText(DEFAULT_CHAIN.short_name);
     });
 
-    it('changes home tab via Tabs onSelect', async () => {
-        const setHomeTabIndex = jest.fn();
-        render(
-            renderWithHomeProviders(<Home />, {
-                routes: { setHomeTabIndex },
-            }),
-        );
-        await screen.findByText(HomeTabType.LegacyWallet);
-        // Click the Wallet tab; Tabs library triggers onSelect.
-        await userEvent.click(screen.getByText(HomeTabType.LegacyWallet));
-        expect(setHomeTabIndex).toHaveBeenCalled();
+    it('navigates to Explore from the top bar', async () => {
+        render(renderWithHomeProviders(<Home />));
+        await screen.findByTestId('open-explore');
+        await userEvent.click(screen.getByTestId('open-explore'));
+        expect(mockHistoryPush).toHaveBeenCalledWith(EXPLORE_ROUTE);
     });
 
     it('opens logout modal when Lock Chilly item triggers logout case via stub (case "logout" path)', async () => {

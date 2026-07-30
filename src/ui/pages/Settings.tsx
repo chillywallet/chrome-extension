@@ -10,7 +10,7 @@ import {
     ICON_SELECTOR_ROUTE,
 } from '../../shared/constants/routes';
 import { usePreferences } from '../../store/selectors';
-import Header from '../components/Header';
+import BottomNav from '../components/BottomNav';
 import ThemeModal from '../components/ThemeModal';
 
 type Props = {};
@@ -22,10 +22,12 @@ export default React.memo<Props>((props: Props) => {
     const [isShowThemeSetting, setIsShowThemeSetting] = useState(false);
 
     return (
-        <div className="flex flex-col h-full min-h-[400px] relative">
-            <Header title="Settings" />
+        <div className="flex flex-col h-full min-h-0 relative">
+            <h1 className="font-display text-[26px] leading-tight font-medium px-5 pt-5 pb-4 shrink-0">
+                Settings
+            </h1>
 
-            <div className="flex flex-col flex-1 overflow-auto divide-y divide-gray-300 dark:divide-gray-600">
+            <div className="flex flex-col flex-1 min-h-0 overflow-auto divide-y divide-slate-100 dark:divide-darkline/40">
                 {/* Theme Setting */}
                 <button
                     onClick={() => setIsShowThemeSetting(true)}
@@ -74,6 +76,8 @@ export default React.memo<Props>((props: Props) => {
                     </button>
                 )}
             </div>
+
+            <BottomNav />
 
             <ThemeModal show={isShowThemeSetting} onClose={() => setIsShowThemeSetting(false)} />
         </div>
