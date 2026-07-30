@@ -3,6 +3,7 @@ import { Switch, useHistory, withRouter } from 'react-router-dom';
 import { Route } from 'react-router-dom';
 
 import {
+    ACTIVITY_ROUTE,
     ADD_NEW_WALLET_ROUTE,
     ASSET_COIN_DETAIL_ROUTE,
     ASSET_NFT_COLLECTION_ROUTE,
@@ -13,6 +14,7 @@ import {
     DEFAULT_ROUTE,
     DEVELOP_ROUTE,
     EARN_ROUTE,
+    EXPLORE_ROUTE,
     FORGOT_CODE_RECOVER_CODE_ROUTE,
     FORGOT_CODE_ROUTE,
     GAS_OPTIONS_ROUTE,
@@ -28,8 +30,10 @@ import {
     UNLOCK_ROUTE,
 } from '../../shared/constants/routes';
 
+import Activity from './Activity';
 import Asset from './Asset';
 import Authenticated from './Authenticated';
+import Explore from './Explore';
 import CoinDetail from './CoinDetail';
 import Contact from './Contact';
 import Develop from './Develop';
@@ -95,6 +99,8 @@ function Routes() {
                     <Authenticated path={ASSET_NFT_DETAIL_ROUTE} component={NFTDetail} />
                     <Authenticated path={ASSET_COIN_DETAIL_ROUTE} component={AssetCoinDetail} />
                     <Authenticated path={SWAP_ROUTE} component={Swap} />
+                    <Authenticated path={ACTIVITY_ROUTE} component={Activity} exact />
+                    <Authenticated path={EXPLORE_ROUTE} component={Explore} exact />
                     <Authenticated path={SEARCH_LIST_ROUTE} component={SearchList} />
                     <Authenticated path={SETTINGS_ROUTE} component={Settings} exact />
                     <Authenticated path={EARN_ROUTE} component={EarnFlow} />

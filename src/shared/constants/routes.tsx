@@ -54,6 +54,10 @@ export const ASSET_NFT_DETAIL_ROUTE = '/asset-nft';
 export const ASSET_COIN_DETAIL_ROUTE = '/asset-coin';
 export const SWAP_ROUTE = '/swap';
 
+/** Bottom-nav destinations alongside DEFAULT_ROUTE, SWAP_ROUTE and SETTINGS_ROUTE. */
+export const ACTIVITY_ROUTE = '/activity';
+export const EXPLORE_ROUTE = '/explore';
+
 export const EARN_ROUTE = '/earn';
 export const EARN_LIST_ROUTE = '/earn/list';
 export const EARN_LIQUID_STAKING_ROUTE = '/earn/liquid-staking';

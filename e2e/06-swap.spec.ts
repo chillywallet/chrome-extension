@@ -9,8 +9,9 @@ test('swap', async ({ page, extensionId, context }) => {
 
 	await page.waitForTimeout(3000);
 
-	// Send coin
-	await page.locator('text=Swap').click();
+	// Open Swap from the bottom navigation ("Swap" also appears in the action
+	// capsule and on the submit button, so a bare text locator is ambiguous).
+	await page.getByTestId('nav-swap').click();
 
 	await page.waitForTimeout(5000);
 
@@ -28,7 +29,7 @@ test('swap', async ({ page, extensionId, context }) => {
 	//Wait for the gas fee to be resolved
 	await page.waitForTimeout(2000);
 
-	const swapBtn = page.locator('text=Swap').last();
+	const swapBtn = page.getByTestId('swap-submit');
 	await expect(swapBtn).toBeEnabled({
 		timeout: 30000
 	});
@@ -44,8 +45,8 @@ test('swap', async ({ page, extensionId, context }) => {
 	//Back to home page
 	await page.goBack();
 
-	//Go to Transactions page
-	await page.locator('text=Transactions').click();
+	//Go to the Activity screen (transaction history moved out of the wallet tabs)
+	await page.getByTestId('nav-activity').click();
 
 	//Verify the transaction is successful
 	await expect(page.locator('text=Swapped')).toBeVisible();

@@ -6,6 +6,7 @@ import { Transaction } from '../../shared/types/Wallet';
 import {
     formatAddress,
     getDateTimeStringFromTimestamp,
+    getTimeStringFromTimestamp,
     isEqualCaseInsensitive,
     toTitleCase,
 } from '../../shared/utils/string';
@@ -19,6 +20,8 @@ export type Props = {
     containerStyle?: any;
     data: Transaction;
     onPress: (item: Transaction) => void;
+    /** Show only the time — for the Activity timeline, where the day is the group heading. */
+    timeOnly?: boolean;
 };
 
 type HandledData = {
@@ -51,9 +54,11 @@ export const Placeholder = () => {
     );
 };
 
-export default React.memo<Props>(({ data, containerStyle, onPress }: Props) => {
+export default React.memo<Props>(({ data, containerStyle, onPress, timeOnly }: Props) => {
+    const formatTimestamp = timeOnly ? getTimeStringFromTimestamp : getDateTimeStringFromTimestamp;
+
     const [handledData, setHandledData] = useState<HandledData>({
-        datetime: getDateTimeStringFromTimestamp(data.timestamp),
+        datetime: formatTimestamp(data.timestamp),
         name: toTitleCase(data?.method || data?.type || ''),
         fee: '',
         usdFee: '',
@@ -174,7 +179,7 @@ export default React.memo<Props>(({ data, containerStyle, onPress }: Props) => {
             }
 
             setHandledData({
-                datetime: getDateTimeStringFromTimestamp(timestamp),
+                datetime: formatTimestamp(timestamp),
                 logo: _logo,
                 name: toTitleCase(method || type || ''),
                 tokenAmount: _tokenAmount,
@@ -187,7 +192,7 @@ export default React.memo<Props>(({ data, containerStyle, onPress }: Props) => {
         };
 
         loadData();
-    }, [data]);
+    }, [data, formatTimestamp]);
 
     return (
         <div

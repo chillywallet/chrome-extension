@@ -13,6 +13,8 @@ const mockPreferences: any = { enableChangeIcon: true };
 jest.mock('react-router-dom', () => ({
     ...jest.requireActual('react-router-dom'),
     useHistory: () => ({ push: mockHistoryPush }),
+    // Settings renders BottomNav, which reads the current route.
+    useLocation: () => ({ pathname: '/settings' }),
 }));
 
 jest.mock('../../../src/store/selectors', () => ({

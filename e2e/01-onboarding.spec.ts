@@ -62,7 +62,7 @@ test('onboarding: create pin and import wallet', async ({ page, extensionId }) =
 	await page.getByRole('button', { name: /Start Using Wallet/i }).click();
 
 	// Home is reached once the wallet tabs render.
-	await expect(page.getByText('Transactions').first()).toBeVisible({
+	await expect(page.getByText('Tokens').first()).toBeVisible({
 		timeout: 30000,
 	});
 

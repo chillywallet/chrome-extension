@@ -29,7 +29,6 @@ import {
     FIAT_ON_RAMP_ROUTE,
 } from '../../../shared/constants/routes';
 import { KeyringTypes } from '../../../controller/KeyringController';
-import { PendingTransaction, Transaction } from '../../../shared/types/Wallet';
 import eventManager from '../../../shared/utils/eventManager';
 import { smartTrim } from '../../../shared/utils/string';
 import { getEnvironmentType } from '../../../shared/utils/utils';
@@ -45,8 +44,6 @@ import CoinPortfolio from '../../components/CoinPortfolio';
 import ContextMenu, { ContextMenuItem } from '../../components/ContextMenu';
 import NFTPortfolio from '../../components/NFTPortfolio';
 import ScrollWithButton from '../../components/ScrollWithButton';
-import { SpeedUpAndCancelTxData } from '../../components/SpeedUpAndCancelModal';
-import TransactionPortfolio from '../../components/TransactionPortfolio';
 import { useRoutesData } from '../RoutesProvider';
 import WalletProvider, { useWalletData } from './WalletProvider';
 
@@ -55,9 +52,6 @@ type Props = {
         isShowConnectedSites: boolean;
         isSmartWallet?: boolean;
     }) => void;
-    onTransactionPress: (transaction: Transaction) => void;
-    onPendingTransactionPress: (transaction: PendingTransaction) => void;
-    setCancelSpeedUpTxData: (data: SpeedUpAndCancelTxData) => void;
 };
 
 type ActionButton = {
@@ -120,12 +114,7 @@ const EOAWalletTab = React.memo<Props>((props: Props) => {
         setShowSpamNft,
         onCoinSwapPress,
     } = useRoutesData();
-    const {
-        setIsShowConnectedSites,
-        onTransactionPress,
-        onPendingTransactionPress,
-        setCancelSpeedUpTxData,
-    } = props;
+    const { setIsShowConnectedSites } = props;
 
     const {
         containerClass,
@@ -133,10 +122,8 @@ const EOAWalletTab = React.memo<Props>((props: Props) => {
         tooltipVariant,
         currentTotalCoins,
         isLoading,
-        hasMore,
         onAddressPress,
         loadData,
-        onLoadMore,
     } = useWalletData();
 
     const history = useHistory();
@@ -454,8 +441,8 @@ const EOAWalletTab = React.memo<Props>((props: Props) => {
 
                 <div className="aurora-line w-16 mt-5" aria-hidden="true" />
 
-                {/* Action tiles */}
-                <div className="grid grid-flow-col auto-cols-fr gap-2 w-full lg:w-[400px] mt-5">
+                {/* Floating action capsule */}
+                <div className="action-capsule w-full lg:w-[400px] mt-5">
                     {actionButtons.map(button => {
                         const tooltip = button.tooltip
                             ? {
@@ -470,14 +457,14 @@ const EOAWalletTab = React.memo<Props>((props: Props) => {
                             <button
                                 disabled={!!button.disabled}
                                 key={button.type}
-                                className="flex flex-col items-center justify-center gap-1.5 h-16 min-w-0 rounded-[14px] bg-white dark:bg-dark border border-slate-200 dark:border-darkline/60 hover:border-primary/50 dark:hover:border-accent/50 disabled:opacity-40 disabled:hover:border-slate-200 dark:disabled:hover:border-darkline/60 transition-colors"
+                                className="action-capsule-item"
                                 onClick={e => {
                                     e.preventDefault();
                                     onActionButtonPress(button.type);
                                 }}
                                 {...tooltip}>
-                                <button.icon size={20} className="text-primary dark:text-accent" />
-                                <p className="text-[11px] leading-none text-gray-600 dark:text-gray-300">
+                                <button.icon size={21} />
+                                <p className="text-[10px] leading-none text-gray-600 dark:text-gray-300">
                                     {button.name}
                                 </p>
                             </button>
@@ -494,9 +481,8 @@ const EOAWalletTab = React.memo<Props>((props: Props) => {
                 selectedTabPanelClassName="tab-selected-tab-panel-class-name"
                 className="tab-class-name mt-6">
                 <TabList className="tab-tablist sticky top-0 z-20">
-                    <Tab className="tab-tablist-tab">Coins</Tab>
-                    <Tab className="tab-tablist-tab">NFTs</Tab>
-                    <Tab className="tab-tablist-tab">Transactions</Tab>
+                    <Tab className="tab-tablist-tab">Tokens</Tab>
+                    <Tab className="tab-tablist-tab">Collectibles</Tab>
                 </TabList>
 
                 <TabPanel>
@@ -504,6 +490,12 @@ const EOAWalletTab = React.memo<Props>((props: Props) => {
                         onCoinPress={onAssetCoinPress}
                         walletAddress={currentAccount?.address ?? ''}
                     />
+                    <div className="flex flex-col items-center py-6 opacity-40">
+                        <div className="h-px w-24 bg-gradient-to-r from-transparent via-gray-400 dark:via-darkline to-transparent mb-3" />
+                        <p className="text-[10px] uppercase tracking-widest font-semibold">
+                            End of assets
+                        </p>
+                    </div>
                 </TabPanel>
                 <TabPanel>
                     <NFTPortfolio
@@ -512,17 +504,6 @@ const EOAWalletTab = React.memo<Props>((props: Props) => {
                         setShowSpamNft={setShowSpamNft}
                         walletAddress={currentAccount?.address ?? ''}
                         containerClass={containerClass}
-                    />
-                </TabPanel>
-                <TabPanel>
-                    <TransactionPortfolio
-                        hasMore={hasMore}
-                        onLoadMore={onLoadMore}
-                        onTransactionPress={onTransactionPress}
-                        onPendingTransactionPress={onPendingTransactionPress}
-                        walletAddress={currentAccount?.address ?? ''}
-                        containerClass={containerClass}
-                        setCancelSpeedUpTxData={setCancelSpeedUpTxData}
                     />
                 </TabPanel>
             </Tabs>

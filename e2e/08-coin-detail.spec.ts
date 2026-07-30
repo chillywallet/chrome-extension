@@ -9,8 +9,9 @@ test('coin-detail', async ({ page, extensionId, context }) => {
 
 	await page.waitForTimeout(3000);
 
-	// Explore screen
-	await page.locator('text=Explore').click();
+	// Explore screen (top-bar entry point since the bottom nav became
+	// Home / Swap / Activity / Settings)
+	await page.getByTestId('open-explore').click();
 
 	await page.locator('text=Coins').click();
 
