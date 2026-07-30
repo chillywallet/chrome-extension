@@ -1,0 +1,16 @@
+---
+description: Always review all project and user agent skills before substantive work
+alwaysApply: true
+---
+
+# Agent skills — full review
+
+1. **Inventory first** — Before planning, implementing, or answering in depth, build the full skill list you must consider:
+   - Every entry under `<agent_skills>` / the skills block in agent context.
+   - Every `SKILL.md` under this repository’s `.agents/skills/` (scan the tree if the context list might be stale).
+
+2. **Per-skill pass** — For **each** skill in that inventory, briefly decide whether it could apply to the user’s request, including indirect cases (e.g. CI, E2E, design system, performance, Cursor product behavior). Do not skip a skill without a clear reason it is out of scope.
+
+3. **Read before acting** — For any skill that is relevant or borderline, **read** its `SKILL.md` with the Read tool and follow its instructions. Do not rely only on the short description in the skills list.
+
+4. **Ordering** — When several skills apply, read them early (before large refactors or plans). If guidance conflicts, prefer the more specific skill for that layer of the work (e.g. Playwright skill for tests, Tailwind skill for tokens and component styling).

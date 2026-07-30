@@ -1,0 +1,67 @@
+/*
+ * Pre-React loading screen, shared by popup / sidepanel / fullscreen / notification.
+ * Shown from document load until the UI receives `startUISync` and React replaces
+ * the contents of #app-content. Fully self-contained (inline SVG + CSS only) so it
+ * can never break on a missing image asset.
+ */
+
+.chilly-loading {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    background: #0f2233;
+}
+
+.chilly-loading-mark {
+    width: 76px;
+    height: 76px;
+    animation: chilly-bob 1.8s ease-in-out infinite;
+}
+
+@keyframes chilly-bob {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-7px);
+    }
+}
+
+.chilly-loading-dots {
+    display: flex;
+    gap: 9px;
+}
+
+.chilly-loading-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #69c4ee;
+    opacity: 0.25;
+    animation: chilly-dot 1.2s ease-in-out infinite;
+}
+
+.chilly-loading-dots span:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.chilly-loading-dots span:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes chilly-dot {
+    0%,
+    100% {
+        opacity: 0.25;
+        transform: scale(1);
+    }
+    40% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}

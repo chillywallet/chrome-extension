@@ -1,0 +1,42 @@
+name: Tests
+on:
+    pull_request:
+        branches:
+            - develop
+            - main
+
+jobs:
+    test:
+        environment: testing
+        timeout-minutes: 15
+
+        permissions:
+            contents: read
+            pull-requests: write
+
+        strategy:
+            matrix:
+                node-version: [22.x]
+
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Set up Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: 'npm'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Run tests with coverage
+              run: npm run test:coverage
+
+            - name: Report coverage
+              if: always()
+              uses: MishaKav/jest-coverage-comment@main
+              with:
+                  coverage-summary-path: coverage/coverage-summary.json

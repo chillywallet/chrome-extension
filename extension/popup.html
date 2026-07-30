@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html style="width: 430px; height: 600px; overflow: hidden;" dir="ltr">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1 user-scalable=no" />
+        <title>Chilly</title>
+        <link rel="stylesheet" href="./css/index.css" />
+    </head>
+    <body style="width: 100vw; height: 100vh; overflow: hidden; position: relative">
+        <div id="app-content">
+            <div class="chilly-loading" role="status" aria-label="Loading Chilly Wallet">
+                <svg class="chilly-loading-mark" viewBox="0 0 48 48" aria-hidden="true">
+                    <rect width="48" height="48" rx="12" fill="#152B40"/><path d="M24 9c-5 0-8.5 4.4-8.5 10.2 0 3.1-.9 5-2.5 7.1-1.2 1.6-.9 3.4.8 3.9-.4 3.7 1.7 8.8 10.2 8.8s10.6-5.1 10.2-8.8c1.7-.5 2-2.3.8-3.9-1.6-2.1-2.5-4-2.5-7.1C32.5 13.4 29 9 24 9z" fill="#69C4EE"/>
+                </svg>
+                <div class="chilly-loading-dots"><span></span><span></span><span></span></div>
+            </div>
+        </div>
+
+        <div id="error-message" style="display: none; text-align: center; padding: 20px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+            <p>Failed to load the app. Please try again or reinstall the extension.</p>
+        </div>
+        
+        <div id="popover-content"></div>
+        <script src="../scripts/loadApp.js" async></script>
+    </body>
+</html>

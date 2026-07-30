@@ -1,0 +1,1 @@
+export type ChartFilterType = 'day' | 'week' | 'month' | 'year' | 'all' | 'custom';

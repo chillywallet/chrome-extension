@@ -1,0 +1,300 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Frost typography — bundled variable fonts (extension/fonts/, copied next to
+ * the compiled css by scripts/build.sh). MV3 CSP forbids remote fonts.
+ * Figtree = body, Space Grotesk = display + numerals (font-display utility).
+ */
+@font-face {
+    font-family: 'Figtree';
+    font-style: normal;
+    font-weight: 300 900;
+    font-display: swap;
+    src: url('../fonts/figtree-var.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Figtree';
+    font-style: italic;
+    font-weight: 300 900;
+    font-display: swap;
+    src: url('../fonts/figtree-italic-var.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Space Grotesk';
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url('../fonts/space-grotesk-var.woff2') format('woff2');
+}
+
+@layer base {
+    ::-webkit-scrollbar:horizontal {
+        @apply h-1.5;
+    }
+
+    ::-webkit-scrollbar:vertical {
+        @apply w-1.5;
+    }
+
+    /* Track */
+    ::-webkit-scrollbar-track {
+        @apply bg-inherit;
+    }
+
+    /* Handle */
+    ::-webkit-scrollbar-thumb {
+        @apply bg-gray-700 dark:bg-gray-300 rounded-xl;
+    }
+
+    /* Handle on hover */
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-gray-500;
+    }
+}
+
+.btn {
+    @apply h-12 py-2 px-5 border border-slate-200 rounded-full enabled:hover:bg-ice/60 text-sm font-medium disabled:opacity-50 transition-colors;
+}
+
+.dark .btn {
+    @apply border-darkline enabled:hover:bg-header;
+}
+
+/* Coral is reserved for the primary call to action. */
+.btn-primary {
+    @apply bg-coral border-coral enabled:hover:bg-coraldark enabled:hover:border-coraldark text-white disabled:opacity-50;
+}
+
+.dark .btn-primary {
+    @apply enabled:hover:bg-coraldark;
+}
+
+.btn-danger {
+    @apply bg-red-600 border-red-600 enabled:hover:bg-red-700 text-white disabled:opacity-50;
+}
+
+.dark .btn-danger {
+    @apply enabled:hover:bg-red-700;
+}
+
+.btn-disabled {
+    @apply opacity-50 cursor-not-allowed;
+}
+
+/*
+ * Frost signature — the aurora hairline. Reserved for hero moments (the Home
+ * balance, the onboarding headline) and the active tab pill. Nowhere else.
+ */
+@keyframes aurora-shift {
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+.aurora-line {
+    height: 2px;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #69c4ee, #7fe8c1, #69c4ee);
+    background-size: 200% 100%;
+    animation: aurora-shift 6s ease-in-out infinite;
+}
+
+/* Frost bottom sheets (Modal.tsx + menu sheets). */
+.sheet {
+    @apply rounded-t-[20px] bg-white dark:bg-dark border-t border-slate-100 dark:border-darkline/60;
+}
+
+.sheet-handle {
+    @apply mx-auto mt-2.5 h-1 w-9 shrink-0 rounded-full bg-slate-300 dark:bg-darkline;
+}
+
+.sheet-overlay {
+    @apply bg-darker/60 backdrop-blur-[2px];
+}
+
+/* Frost card surface — quiet raised panel with a hairline, no drop shadow. */
+.frost-card {
+    @apply rounded-2xl bg-white dark:bg-dark border border-slate-200 dark:border-darkline/60;
+}
+
+.box-container {
+    @apply w-full sm:max-w-[640px] md:max-w-[768px] lg:max-w-[1024px] xl:max-w-[1280px];
+}
+
+.nft-box {
+    @apply w-full aspect-square rounded-md overflow-hidden;
+}
+
+/** Tabs CSS — segmented pill control (Frost). */
+
+.tab-tablist {
+    @apply flex flex-row items-center gap-1 p-1.5 text-sm bg-white dark:bg-darker;
+}
+
+.tab-tablist-tab {
+    @apply relative flex flex-1 h-8 justify-center items-center rounded-full cursor-pointer text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-accent focus:outline-none transition-colors;
+}
+
+.tab-selected-tab-class-name {
+    @apply bg-primary/10 dark:bg-accent/10 font-semibold text-primary dark:text-accent;
+}
+
+.tab-selected-tab-class-name::after {
+    content: '';
+    position: absolute;
+    left: 30%;
+    right: 30%;
+    bottom: 3px;
+    height: 2px;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #69c4ee, #7fe8c1, #69c4ee);
+    background-size: 200% 100%;
+    animation: aurora-shift 6s ease-in-out infinite;
+}
+
+.tab-selected-tab-panel-class-name {
+    @apply flex flex-col flex-1 divide-y divide-slate-100 dark:divide-darkline/40 h-56;
+}
+
+.tab-class-name {
+    @apply w-full flex flex-col flex-1;
+}
+
+/* Compact variant (inline tab strips inside detail pages). */
+.tab-tablist-tab-compact {
+    @apply relative flex h-8 px-4 justify-center items-center rounded-full cursor-pointer focus:outline-none hover:text-primary dark:hover:text-accent transition-colors;
+}
+
+.tab-selected-tab-class-name-compact {
+    @apply bg-primary/10 dark:bg-accent/10 font-semibold text-primary dark:text-accent;
+}
+
+.tab-selected-tab-class-name-compact::after {
+    content: '';
+    position: absolute;
+    left: 30%;
+    right: 30%;
+    bottom: 3px;
+    height: 2px;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #69c4ee, #7fe8c1, #69c4ee);
+    background-size: 200% 100%;
+    animation: aurora-shift 6s ease-in-out infinite;
+}
+
+/* Bottom navigation — frosted dock. */
+.bottom-tab-tablist {
+    @apply flex flex-row h-12 text-xs bg-white/85 dark:bg-darker/85 backdrop-blur-md border-t border-slate-200 dark:border-darkline;
+}
+
+.bottom-tab-tablist-tab {
+    @apply flex flex-1 h-full justify-center items-center cursor-pointer text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none transition-colors;
+}
+
+.bottom-tab-selected-tab-class-name {
+    @apply font-semibold text-primary dark:text-accent;
+}
+
+/** Chart CSS */
+
+.chart-placeholder {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: repeat;
+    background-image: url('data:image/svg+xml;utf8,%3Csvg height=%22auto%22 viewBox=%220 0 2000 1400%22 xmlns=%22http:%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath d=%22M0 579.608c44.4-4.22 133.2 65.247 222-21.1 88.8-86.348 133.2-513.36 222-410.64 88.8 102.72 133.2 784.3 222 924.24 88.8 139.941 133.2-223.201 222-224.535 88.8-1.334 133.2 328.42 222 217.866 88.8-110.555 133.2-596.823 222-770.64 88.8-173.818 133.2-212.443 222-98.446 88.8 113.997 133.2 626.038 222 668.43 88.8 42.393 177.6-365.173 222-456.466l2 991.683H0Z%22 fill=%22%23e5e7eb%22%2F%3E%3Cpath d=%22M0 579.608c44.4-4.22 133.2 65.247 222-21.1 88.8-86.348 133.2-513.36 222-410.64 88.8 102.72 133.2 784.3 222 924.24 88.8 139.941 133.2-223.201 222-224.535 88.8-1.334 133.2 328.42 222 217.866 88.8-110.555 133.2-596.823 222-770.64 88.8-173.818 133.2-212.443 222-98.446 88.8 113.997 133.2 626.038 222 668.43 88.8 42.393 177.6-365.173 222-456.466%22 fill=%22none%22%2F%3E%3C%2Fsvg%3E');
+}
+
+.chart-placeholder-dark {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: repeat;
+    background-image: url('data:image/svg+xml;utf8,%3Csvg height=%22auto%22 viewBox=%220 0 2000 1400%22 xmlns=%22http:%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath d=%22M0 1387.71c21-10.53 63-27.067 105-52.647s63-53.97 105-75.253 63-17.777 105-31.162c42-13.385 63-15.292 105-35.765s63-37.65 105-66.6c42-28.95 63-35.209 105-78.151 42-42.943 63-110.076 105-136.563 42-26.487 63-12.775 105 4.127s63 96.42 105 80.384 63-138.085 105-160.565c42-22.48 63 30.183 105 48.166 42 17.983 63 118.587 105 41.748 42-76.84 63-338.527 105-425.946 42-87.42 63-69.8 105-11.15 42 58.651 63 334.23 105 304.405 42-29.825 63-404.904 105-453.53 42-48.624 63 228.259 105 210.406 42-17.852 63-312.029 105-299.667 42 12.361 84 289.18 105 361.475l5 788.578H0Z%22 fill=%22%23152B40%22%2F%3E%3Cpath d=%22M0 1387.71c21-10.53 63-27.067 105-52.647s63-53.97 105-75.253 63-17.777 105-31.162c42-13.385 63-15.292 105-35.765s63-37.65 105-66.6c42-28.95 63-35.209 105-78.151 42-42.943 63-110.076 105-136.563 42-26.487 63-12.775 105 4.127s63 96.42 105 80.384 63-138.085 105-160.565c42-22.48 63 30.183 105 48.166 42 17.983 63 118.587 105 41.748 42-76.84 63-338.527 105-425.946 42-87.42 63-69.8 105-11.15 42 58.651 63 334.23 105 304.405 42-29.825 63-404.904 105-453.53 42-48.624 63 228.259 105 210.406 42-17.852 63-312.029 105-299.667 42 12.361 84 289.18 105 361.475%22 fill=%22none%22%2F%3E%3C%2Fsvg%3E');
+}
+
+@keyframes custom-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.custom-anim-fast {
+    animation: custom-spin 0.4s linear infinite;
+}
+
+.custom-anim-slow {
+    animation: custom-spin 0.8s linear infinite;
+}
+
+@keyframes heartbeat {
+    0% {
+        transform: scale(1);
+        /* opacity: 0.7; */
+    }
+
+    25% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1);
+        /* opacity: 0.7; */
+    }
+
+    75% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+        /* opacity: 0.7; */
+    }
+}
+
+.animate-heartbeat {
+    animation: heartbeat 2s infinite;
+}
+
+.bg-placeholder {
+    @apply bg-slate-200 dark:bg-white/10;
+}
+
+/* Candy Stripes Animation */
+@keyframes candyStripes {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 20px 0;
+    }
+}
+
+.animate-candy-stripes {
+    animation: candyStripes 1s linear infinite;
+}
+
+/* Keep last: wins the cascade over every animated rule above. */
+@media (prefers-reduced-motion: reduce) {
+    .aurora-line,
+    .tab-selected-tab-class-name::after,
+    .tab-selected-tab-class-name-compact::after {
+        animation: none;
+    }
+}

@@ -1,0 +1,304 @@
+import type { JsonRpcMiddleware } from '@metamask/json-rpc-engine';
+import { createAsyncMiddleware, createScaffoldMiddleware } from '@metamask/json-rpc-engine';
+import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
+import type { Json, JsonRpcRequest, PendingJsonRpcResponse } from '@metamask/utils';
+import { TransactionParams } from '../shared/types/Transaction';
+
+export type MessageParams = TransactionParams & {
+    data: string;
+    signatureMethod?: string;
+};
+
+export type TypedMessageParams = MessageParams & {
+    version: string;
+};
+
+export type TypedMessageV1Params = Omit<TypedMessageParams, 'data'> & {
+    data: Record<string, unknown>[];
+};
+
+export interface WalletMiddlewareOptions {
+    getAccounts: (req: JsonRpcRequest) => Promise<string[]>;
+    processPersonalMessage?: (msgParams: MessageParams, req: JsonRpcRequest) => Promise<string>;
+    processTransaction?: (txParams: TransactionParams, req: JsonRpcRequest) => Promise<string>;
+    processSignTransaction?: (txParams: TransactionParams, req: JsonRpcRequest) => Promise<string>;
+    processTypedMessage?: (
+        msgParams: TypedMessageV1Params,
+        req: JsonRpcRequest,
+        version: string,
+    ) => Promise<string>;
+    processTypedMessageV3?: (
+        msgParams: TypedMessageParams,
+        req: JsonRpcRequest,
+        version: string,
+    ) => Promise<string>;
+    processTypedMessageV4?: (
+        msgParams: TypedMessageParams,
+        req: JsonRpcRequest,
+        version: string,
+    ) => Promise<string>;
+    getUnlockPromise: () => Promise<void>;
+}
+
+export function createWalletMiddleware({
+    getAccounts,
+    processPersonalMessage,
+    processTransaction,
+    processSignTransaction,
+    processTypedMessage,
+    processTypedMessageV3,
+    processTypedMessageV4,
+    getUnlockPromise,
+}: WalletMiddlewareOptions): JsonRpcMiddleware<any, any> {
+    if (!getAccounts) {
+        throw new Error('opts.getAccounts is required');
+    }
+
+    return createScaffoldMiddleware({
+        // account lookups
+        eth_accounts: createAsyncMiddleware(lookupAccounts),
+        // tx signatures
+        eth_sendTransaction: createAsyncMiddleware(sendTransaction),
+        eth_signTransaction: createAsyncMiddleware(signTransaction),
+        // message signatures
+        eth_signTypedData: createAsyncMiddleware(signTypedData),
+        eth_signTypedData_v3: createAsyncMiddleware(signTypedDataV3),
+        eth_signTypedData_v4: createAsyncMiddleware(signTypedDataV4),
+        personal_sign: createAsyncMiddleware(personalSign),
+    });
+
+    //
+    // account lookups
+    //
+
+    async function lookupAccounts(
+        req: JsonRpcRequest,
+        res: PendingJsonRpcResponse<Json>,
+    ): Promise<void> {
+        res.result = await getAccounts(req);
+    }
+
+    //
+    // transaction signatures
+    //
+
+    async function sendTransaction(
+        req: JsonRpcRequest,
+        res: PendingJsonRpcResponse<Json>,
+    ): Promise<void> {
+        if (!processTransaction) {
+            throw rpcErrors.methodNotSupported();
+        }
+        if (!req.params || !Array.isArray(req.params) || !(req.params.length >= 1)) {
+            throw rpcErrors.invalidInput();
+        }
+
+        await getUnlockPromise();
+
+        const params = req.params[0] as TransactionParams | undefined;
+        const txParams: TransactionParams = {
+            ...params,
+            from: await validateAndNormalizeKeyholder(params?.from || '', req),
+        };
+        res.result = await processTransaction(txParams, req);
+    }
+
+    async function signTransaction(
+        req: JsonRpcRequest,
+        res: PendingJsonRpcResponse<Json>,
+    ): Promise<void> {
+        if (!processSignTransaction) {
+            throw rpcErrors.methodNotSupported();
+        }
+        if (!req.params || !Array.isArray(req.params) || !(req.params.length >= 1)) {
+            throw rpcErrors.invalidInput();
+        }
+
+        await getUnlockPromise();
+
+        const params = req.params[0] as TransactionParams | undefined;
+        const txParams: TransactionParams = {
+            ...params,
+            from: await validateAndNormalizeKeyholder(params?.from || '', req),
+        };
+        res.result = await processSignTransaction(txParams, req);
+    }
+
+    //
+    // message signatures
+    //
+    async function signTypedData(
+        req: JsonRpcRequest,
+        res: PendingJsonRpcResponse<Json>,
+    ): Promise<void> {
+        if (!processTypedMessage) {
+            throw rpcErrors.methodNotSupported();
+        }
+        if (!req?.params || !Array.isArray(req.params) || !(req.params.length >= 2)) {
+            throw rpcErrors.invalidInput();
+        }
+
+        await getUnlockPromise();
+
+        const params = req.params as [Record<string, unknown>[], string, Record<string, string>?];
+        const message = params[0];
+        const address = await validateAndNormalizeKeyholder(params[1], req);
+        const version = 'V1';
+        const extraParams = params[2] || {};
+        const msgParams: TypedMessageV1Params = {
+            ...extraParams,
+            from: address,
+            data: message,
+            signatureMethod: 'eth_signTypedData',
+            version,
+        };
+
+        res.result = await processTypedMessage(msgParams, req, version);
+    }
+
+    async function signTypedDataV3(
+        req: JsonRpcRequest,
+        res: PendingJsonRpcResponse<Json>,
+    ): Promise<void> {
+        if (!processTypedMessageV3) {
+            throw rpcErrors.methodNotSupported();
+        }
+        if (!req?.params || !Array.isArray(req.params) || !(req.params.length >= 2)) {
+            throw rpcErrors.invalidInput();
+        }
+
+        await getUnlockPromise();
+
+        const params = req.params as [string, string];
+
+        const address = await validateAndNormalizeKeyholder(params[0], req);
+        const message = params[1];
+        const version = 'V3';
+        const msgParams: TypedMessageParams = {
+            data: message,
+            from: address,
+            version,
+            signatureMethod: 'eth_signTypedData_v3',
+        };
+
+        res.result = await processTypedMessageV3(msgParams, req, version);
+    }
+
+    async function signTypedDataV4(
+        req: JsonRpcRequest,
+        res: PendingJsonRpcResponse<Json>,
+    ): Promise<void> {
+        if (!processTypedMessageV4) {
+            throw rpcErrors.methodNotSupported();
+        }
+        if (!req?.params || !Array.isArray(req.params) || !(req.params.length >= 2)) {
+            throw rpcErrors.invalidInput();
+        }
+
+        await getUnlockPromise();
+
+        const params = req.params as [string, string];
+
+        const address = await validateAndNormalizeKeyholder(params[0], req);
+        const message = params[1];
+        const version = 'V4';
+        const msgParams: TypedMessageParams = {
+            data: message,
+            from: address,
+            version,
+            signatureMethod: 'eth_signTypedData_v4',
+        };
+
+        res.result = await processTypedMessageV4(msgParams, req, version);
+    }
+
+    async function personalSign(
+        req: JsonRpcRequest,
+        res: PendingJsonRpcResponse<Json>,
+    ): Promise<void> {
+        if (!processPersonalMessage) {
+            throw rpcErrors.methodNotSupported();
+        }
+        if (!req?.params || !Array.isArray(req.params) || !(req.params.length >= 2)) {
+            throw rpcErrors.invalidInput();
+        }
+
+        await getUnlockPromise();
+
+        const params = req.params as [string, string, TransactionParams?];
+
+        // process normally
+        const firstParam = params[0];
+        const secondParam = params[1];
+        // non-standard "extraParams" to be appended to our "msgParams" obj
+        const extraParams = params[2] || {};
+
+        // We initially incorrectly ordered these parameters.
+        // To gracefully respect users who adopted this API early,
+        // we are currently gracefully recovering from the wrong param order
+        // when it is clearly identifiable.
+        //
+        // That means when the first param is definitely an address,
+        // and the second param is definitely not, but is hex.
+        let address: string, message: string;
+        if (resemblesAddress(firstParam) && !resemblesAddress(secondParam)) {
+            let warning = `The eth_personalSign method requires params ordered `;
+            warning += `[message, address]. This was previously handled incorrectly, `;
+            warning += `and has been corrected automatically. `;
+            warning += `Please switch this param order for smooth behavior in the future.`;
+            (res as any).warning = warning;
+
+            address = firstParam;
+            message = secondParam;
+        } else {
+            message = firstParam;
+            address = secondParam;
+        }
+        address = await validateAndNormalizeKeyholder(address, req);
+
+        const msgParams: MessageParams = {
+            ...extraParams,
+            from: address,
+            data: message,
+            signatureMethod: 'personal_sign',
+        };
+
+        // eslint-disable-next-line require-atomic-updates
+        res.result = await processPersonalMessage(msgParams, req);
+    }
+
+    /**
+     * Validates the keyholder address, and returns a normalized (i.e. lowercase)
+     * copy of it.
+     *
+     * @param address - The address to validate and normalize.
+     * @param req - The request object.
+     * @returns {string} - The normalized address, if valid. Otherwise, throws
+     * an error
+     */
+    async function validateAndNormalizeKeyholder(
+        address: string,
+        req: JsonRpcRequest,
+    ): Promise<string> {
+        if (typeof address === 'string' && address.length > 0 && resemblesAddress(address)) {
+            // Ensure that an "unauthorized" error is thrown if the requester does not have the `eth_accounts`
+            // permission.
+            const accounts = await getAccounts(req);
+            const normalizedAccounts: string[] = accounts.map(_address => _address.toLowerCase());
+            const normalizedAddress: string = address.toLowerCase();
+
+            if (normalizedAccounts.includes(normalizedAddress)) {
+                return normalizedAddress;
+            }
+            throw providerErrors.unauthorized();
+        }
+        throw rpcErrors.invalidParams({
+            message: `Invalid parameters: must provide an Ethereum address.`,
+        });
+    }
+
+    function resemblesAddress(str: string): boolean {
+        // hex prefix 2 + 20 bytes
+        return str.length === 2 + 20 * 2;
+    }
+}

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Chilly — site blocked</title>
+        <style>
+            body {
+                margin: 0;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #0f2233;
+                color: #f4fafd;
+                font-family: 'Segoe UI', system-ui, sans-serif;
+            }
+            .card {
+                max-width: 440px;
+                padding: 40px;
+                text-align: center;
+            }
+            .mark {
+                width: 72px;
+                height: 72px;
+                margin: 0 auto 24px;
+            }
+            h1 {
+                font-size: 22px;
+                font-weight: 600;
+                margin: 0 0 12px;
+            }
+            p {
+                font-size: 14px;
+                line-height: 1.6;
+                color: #b9d4e6;
+                margin: 0 0 8px;
+            }
+            code {
+                color: #f58a3c;
+                word-break: break-all;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <svg class="mark" viewBox="0 0 48 48" aria-hidden="true">
+                <rect width="48" height="48" rx="12" fill="#152B40"/><path d="M24 9c-5 0-8.5 4.4-8.5 10.2 0 3.1-.9 5-2.5 7.1-1.2 1.6-.9 3.4.8 3.9-.4 3.7 1.7 8.8 10.2 8.8s10.6-5.1 10.2-8.8c1.7-.5 2-2.3.8-3.9-1.6-2.1-2.5-4-2.5-7.1C32.5 13.4 29 9 24 9z" fill="#69C4EE"/>
+            </svg>
+            <h1>This site looks dangerous</h1>
+            <p>Chilly Wallet blocked <code id="domain"></code> because it was flagged as a phishing site.</p>
+            <p>If you believe this is a mistake, you can close this tab and navigate there manually — but do not enter your seed phrase anywhere.</p>
+        </div>
+        <script>
+            const domain = new URLSearchParams(location.hash.slice(1)).get('domain');
+            if (domain) {
+                document.getElementById('domain').textContent = domain;
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,56 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    color: var(--color-text-default);
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    overflow: auto;
+}
+
+html {
+    min-height: 500px;
+
+    /*
+    Until we get the user's preference from React state,
+    assume the user is in dark mode, because the default
+    theme is system preference
+  */
+    @media (prefers-color-scheme: dark) {
+        &:not([data-theme]) {
+            color: var(--brand-colors-white-white000);
+            background-color: var(--brand-colors-grey-grey900);
+        }
+    }
+}
+
+/*
+  This error class is used in the following files still:
+  /ui/pages/create-account/import-account/json.js
+  /ui/pages/create-account/import-account/private-key.js
+*/
+.error {
+    color: var(--color-error-default);
+    margin-top: 3px;
+    margin-bottom: 9px;
+    overflow-wrap: anywhere;
+}
+
+/* stylelint-disable */
+#app-content {
+    overflow-x: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    position: absolute;
+
+    html[data-theme] & {
+        background: var(--color-background-alternative);
+    }
+}

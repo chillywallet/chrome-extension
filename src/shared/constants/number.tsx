@@ -1,0 +1,10 @@
+export const TEN_SECONDS_IN_MILLISECONDS = 10_000;
+export const RECENT_CONTACTS_LIMIT = 5;
+export const IMPORT_INTERVAL = 5000;
+export const REFRESH_WALLET_INTERVAL = 30000;
+export const PAGING_LIMIT = 30;
+export const PAGING_LIMIT_WALLET = 48;
+export const TYPE_DURATION = 400;
+export const IMPORTING_RETRY_LIMIT = 3;
+export const KARMA_PER_CHECKIN = 10;
+export const LOAD_BALANCE_DURATION = 10000;
