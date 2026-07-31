@@ -29,6 +29,12 @@ export type PriceProviderConfig = {
     llamaSlug?: string;
     /** CoinGecko asset-platform id, e.g. 'ethereum', 'polygon-pos'. */
     coingeckoPlatform?: string;
+    /**
+     * CoinGecko id of the native *gas* coin, used to build the `coingecko:{id}`
+     * DefiLlama key. Note this is often not the chain's headline token — gas on
+     * Optimism and Linea is ETH, not OP or LINEA.
+     */
+    nativeCoingeckoId?: string;
 };
 
 export type SwapProviderConfig = {

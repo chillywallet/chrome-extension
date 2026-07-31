@@ -70,3 +70,73 @@ describe('getDataProviderPresets', () => {
         expect(presets[0].apiKeyRef).toBeUndefined();
     });
 });
+
+/**
+ * Registry-wide invariants. Most entries are now produced from a table rather
+ * than written out by hand, so these guard the expansion as much as the data.
+ */
+describe('CHAINS registry', () => {
+    it('keys every chain uniquely by id and by chain_key', () => {
+        const ids = CHAINS.map(chain => chain.chain_id);
+        const keys = CHAINS.map(chain => chain.chain_key);
+
+        expect(new Set(ids).size).toBe(ids.length);
+        expect(new Set(keys).size).toBe(keys.length);
+    });
+
+    it('keeps platform_id unified with chain_id', () => {
+        CHAINS.forEach(chain => {
+            expect(chain.platform_id).toBe(chain.chain_id);
+        });
+    });
+
+    it('dials the first entry of rpcUrls, over https', () => {
+        CHAINS.forEach(chain => {
+            expect(chain.rpcUrls.length).toBeGreaterThan(0);
+            expect(chain.rpcUrl).toBe(chain.rpcUrls[0]);
+            chain.rpcUrls.forEach(url => expect(url).toMatch(/^https:\/\//));
+        });
+    });
+
+    it('matches the bundled viem chain to the configured id', () => {
+        CHAINS.forEach(chain => {
+            expect(chain.viemChain?.id).toBe(chain.chain_id);
+        });
+    });
+
+    it('agrees between swapSupport and the configured swap provider', () => {
+        CHAINS.forEach(chain => {
+            expect(chain.swapSupport).toBe(chain.swapProvider.kind !== 'none');
+
+            if (chain.swapSupport) {
+                expect(chain.swapProvider.providerChainSlug).toBeTruthy();
+            }
+        });
+    });
+
+    it('gives every DefiLlama-priced chain a slug to key tokens by', () => {
+        CHAINS.filter(chain => chain.priceProvider.kind === 'defillama').forEach(chain => {
+            expect(chain.priceProvider.llamaSlug).toBeTruthy();
+        });
+    });
+
+    it('only asks for an API key where the provider actually needs one', () => {
+        CHAINS.forEach(chain => {
+            const { kind, apiKeyRef, baseUrl } = chain.dataProvider;
+
+            if (kind === 'blockscout') {
+                expect(apiKeyRef).toBeUndefined();
+            }
+
+            if (kind === 'etherscan' && baseUrl.includes('api.etherscan.io')) {
+                expect(apiKeyRef).toBe('etherscan');
+            }
+        });
+    });
+
+    it('gives every chain an icon', () => {
+        CHAINS.forEach(chain => {
+            expect(chain.icon).toBeTruthy();
+        });
+    });
+});

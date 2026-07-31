@@ -12,7 +12,12 @@ import { fetchJson } from '../dataproviders/http';
 
 const BASE_URL = 'https://coins.llama.fi';
 
-/** CoinGecko ids for native coins, used for the `coingecko:` llama keys. */
+/**
+ * CoinGecko ids for native coins, used for the `coingecko:` llama keys.
+ *
+ * Chains added after this map was written carry the id on their own config
+ * instead (`priceProvider.nativeCoingeckoId`), which `llamaKey` prefers.
+ */
 const NATIVE_COINGECKO_IDS: Record<number, string> = {
     1: 'ethereum',
     11155111: 'ethereum',
@@ -44,7 +49,7 @@ export function llamaKey(chainId: number, tokenAddress: string): string | null {
     }
 
     if (isNativeAddress(chainId, tokenAddress)) {
-        const coingeckoId = NATIVE_COINGECKO_IDS[chainId];
+        const coingeckoId = chain.priceProvider.nativeCoingeckoId ?? NATIVE_COINGECKO_IDS[chainId];
         return coingeckoId ? `coingecko:${coingeckoId}` : null;
     }
 
