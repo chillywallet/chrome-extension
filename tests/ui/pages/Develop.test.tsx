@@ -1,6 +1,6 @@
 import { createMemoryHistory } from 'history';
 import React from 'react';
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Router } from 'react-router-dom';
 
@@ -63,6 +63,14 @@ function setup() {
 /** The etherscan key field is the first password input on the page. */
 const etherscanInput = () =>
     document.querySelectorAll('input[type="password"]')[0] as HTMLInputElement;
+
+// This page renders a provider picker per registered chain, so it builds a far
+// larger tree than any other suite here. Testing Library's role queries compute
+// accessible names across the whole tree on every poll, which is slow enough
+// that both clocks need raising: `waitFor`'s own 1s window, and jest's 5s
+// per-test default for the cases that additionally await a save round-trip.
+configure({ asyncUtilTimeout: 5000 });
+jest.setTimeout(30000);
 
 describe('Develop', () => {
     const originalBuildType = process.env.BUILD_TYPE;
