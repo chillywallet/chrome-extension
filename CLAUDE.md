@@ -17,6 +17,8 @@ npm run staging              # watch build -> build/staging (static key)
 npm run debug:build          # one-off (non-watch) debug build; run this before npm run test:e2e
 npm run build-dev            # one-off dev build -> build/dev + zip
 npm run build-prod           # one-off prod build -> build/prod + zip
+npm run release              # build-prod + verify-package (use this for a store upload)
+npm run verify-package       # pre-submission checks over build/prod
 npm run css                  # tailwind watch -> build/debug/css/pages.css
 npm run typecheck            # tsc --noEmit
 ```
@@ -58,6 +60,8 @@ Two independent toolchains, easy to confuse:
 Five webpack entries map to the manifest: `ui` (`src/App.tsx`), `background`, `offscreen`, `inpage`, `contentscript` → `build/<target>/scripts/<name>.js`.
 
 The `static-key` argument to `build.sh` swaps `manifest-static-key.json` in for `manifest.json`, pinning the extension ID (needed for e2e). `debug`/`staging` always use it; prod/dev builds use it only via `build-prod-static`/`build-dev-static`.
+
+**Store builds.** Both committed manifests carry a `key`, which pins the extension ID for unpacked loads. The Chrome Web Store derives the ID from the key it holds for the listing and rejects an upload whose manifest key disagrees, so `build.sh` strips `key` for the plain `prod` target only — every other target keeps it. The packaging step zips the *contents* of the build folder, because the store requires `manifest.json` at the archive root; it prefers the `zip` binary and falls back to bsdtar (via the explicit `System32` path, since Git Bash shadows it with GNU tar, which cannot write zips). `scripts/verify-package.js` gates a release on the rest: manifest references that resolve, no leftover `key`, no source maps, MV3, field lengths, and `package.json`/manifest version agreement. `docs/chrome-web-store-listing.md` holds the listing copy, permission justifications and submission checklist; `PRIVACY.md` is the policy the dashboard's mandatory privacy-policy URL must point at.
 
 Note `tsconfig.json` sets `noEmit: true`; `ts-loader` overrides it per-build. Type errors surface during webpack builds or via `npm run typecheck`.
 

@@ -1,6 +1,6 @@
 {
     "name": "chilly-wallet",
-    "version": "0.1.0",
+    "version": "1.7.0",
     "private": true,
     "dependencies": {
         "@clustersxyz/sdk": "^0.4.3",
@@ -117,6 +117,8 @@
         "build-dev": "sh ./scripts/build.sh dev dev.webpack.config.js",
         "build-prod-static": "sh ./scripts/build.sh prod prod.webpack.config.js static-key",
         "build-dev-static": "sh ./scripts/build.sh dev dev.webpack.config.js  static-key",
+        "verify-package": "node ./scripts/verify-package.js build/prod",
+        "release": "npm run build-prod && npm run verify-package",
         "typecheck": "tsc --noEmit",
         "test": "craco test --watchAll=false",
         "test:watch": "craco test",
