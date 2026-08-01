@@ -5,7 +5,7 @@
     },
     "name": "Chilly Wallet",
     "description": "A cool multi-chain crypto wallet. Self-contained, backend-free, and open: your keys never leave your device.",
-    "version": "1.7.0",
+    "version": "1.0.0",
     "manifest_version": 3,
     "permissions": [
         "offscreen",

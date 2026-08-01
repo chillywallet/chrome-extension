@@ -1,6 +1,6 @@
 {
     "name": "chilly-wallet",
-    "version": "1.7.0",
+    "version": "1.0.0",
     "private": true,
     "dependencies": {
         "@clustersxyz/sdk": "^0.4.3",
