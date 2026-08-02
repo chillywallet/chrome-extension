@@ -1,6 +1,9 @@
 {
     "_comment": "Canonical field values for the Chrome Web Store listing. scripts/store/publish.js reads this; store-assets/README.md is the human-readable walkthrough of the same content. Edit here first.",
 
+    "publisherId": "6805f816-b02c-4056-8b2b-69c845330733",
+    "itemId": "jdclggdldnpcfamloigjjadhklekcgib",
+
     "name": "Chilly Wallet",
 
     "summary": "A cool multi-chain crypto wallet. Self-contained, backend-free, and open: your keys never leave your device.",
@@ -12,7 +15,8 @@
 
     "singlePurpose": "Chilly Wallet is a self-custodial cryptocurrency wallet. It stores the user's keys locally, shows their balances and transaction history across EVM networks, and lets them sign and send transactions, including to websites that request a wallet connection.",
 
-    "privacyPolicyUrl": "",
+    "websiteUrl": "https://chillywallet.com",
+    "privacyPolicyUrl": "https://chillywallet.com/privacy",
 
     "permissionJustifications": {
         "storage": "Stores the encrypted wallet vault, accounts, contacts and settings on the user's device. The wallet has no backend, so this is the only place its state exists.",
