@@ -22,13 +22,15 @@
  *  - Re-uploading a version that already exists is an error, so the package upload
  *    is opt-in rather than part of every run.
  *
- * IMAGES ARE NOT AUTOMATED. The store icon and screenshots go through a drop zone
- * whose hidden <input type=file> is decorative: setInputFiles resolves against it
- * and the image never arrives, and a synthetic DragEvent carrying a DataTransfer
- * does not take either. The steps below still try, and verify by watching the
- * thumbnail count rather than trusting the upload call, but expect to drag the six
- * files in by hand — it takes well under a minute and is a one-time cost per
- * listing, which is not worth a brittle workaround for.
+ * Images upload by clicking the drop zone and answering the native file chooser.
+ * The zone's hidden <input type=file> is decorative — setInputFiles resolves
+ * against it and nothing arrives — and a synthetic DragEvent is ignored too.
+ *
+ * Target the zones by DOM order, not by filtering an ancestor on its hint text:
+ * the Graphic assets section is one container holding the screenshots block and
+ * both promo tiles, so an ancestor filter matches all three and picking .last()
+ * quietly uploads a 1280x800 screenshot into the 1400x560 marquee slot. The store
+ * then says only "The image size is incorrect", which reads like a bad file.
  */
 const fs = require('fs');
 const path = require('path');
@@ -90,16 +92,25 @@ async function fieldByLabel(page, text) {
  * a plain click on the label area reports "element is not enabled".
  */
 async function selectCombobox(page, labelPrefix, optionText) {
-    const box = page
-        .locator('[role=combobox]')
-        .filter({ hasText: new RegExp(`^${labelPrefix}`, 'i') })
-        .first();
+    // Centre it and click through the DOM: scrollIntoViewIfNeeded leaves the control
+    // under the sticky header, and Playwright's click then waits forever for a point
+    // that never becomes hittable.
+    const opened = await page.evaluate(prefix => {
+        const box = [...document.querySelectorAll('[role=combobox]')].find(c =>
+            new RegExp(`^${prefix}`, 'i').test(c.innerText || ''),
+        );
+        if (!box) return false;
+        box.scrollIntoView({ block: 'center' });
+        box.click();
+        return true;
+    }, labelPrefix);
 
-    await box.scrollIntoViewIfNeeded();
-    await box.click();
-    await page.waitForTimeout(1500);
+    if (!opened) throw new Error(`no "${labelPrefix}" combobox`);
+    await page.waitForTimeout(2000);
 
-    const option = page.getByRole('option', { name: optionText, exact: false }).first();
+    // Exact: the category list contains both "Tools" and "Developer Tools", and a
+    // substring match silently files a consumer wallet under Developer Tools.
+    const option = page.getByRole('option', { name: optionText, exact: true }).first();
     await option.waitFor({ state: 'visible', timeout: 8000 });
     await option.click();
     await page.waitForTimeout(1500);
@@ -115,6 +126,26 @@ async function selectCombobox(page, labelPrefix, optionText) {
  *
  * `marker` is text unique to the surrounding block, e.g. "Up to a maximum of 5".
  */
+/**
+ * Upload an image by clicking its drop zone and answering the file picker.
+ *
+ * This is the one that works. The zone's hidden <input type=file> is decorative —
+ * setInputFiles resolves against it and nothing arrives — and a synthetic
+ * DragEvent carrying a DataTransfer is ignored too. Clicking the zone opens a
+ * real file chooser, which Playwright can intercept.
+ *
+ * `zone` is the "Drop image here" / "Drop icon here" element itself.
+ */
+async function uploadImage(page, zone, filePath) {
+    await zone.scrollIntoViewIfNeeded();
+
+    const [chooser] = await Promise.all([
+        page.waitForEvent('filechooser', { timeout: 15000 }),
+        zone.click(),
+    ]);
+    await chooser.setFiles(filePath);
+}
+
 async function dropFile(page, marker, filePath) {
     const b64 = fs.readFileSync(filePath).toString('base64');
 
@@ -261,26 +292,28 @@ async function tagFileInput(page, marker, tag) {
     }
 
     // --- screenshots -------------------------------------------------------
-    // "Up to a maximum of 5" is unique to the screenshots block; the store icon and
-    // promo tiles carry different hints.
-    // Each slot is a single-file input, so they go up one at a time; the dashboard
-    // adds a fresh empty slot after every accepted image.
-    //
-    // setInputFiles resolving proves nothing here — the store uploads asynchronously
-    // and a rejected image leaves no trace in the step. So each one is confirmed by
-    // watching the thumbnail count actually rise.
+    // The store uploads asynchronously and a rejected image leaves no trace in the
+    // step itself, so each one is confirmed by watching the thumbnail count rise
+    // rather than by the upload call resolving.
     const shotCount = () =>
         page.evaluate(
             () => document.querySelectorAll('img[src^="blob:"], img[src*="googleusercontent"]').length,
         );
 
+    // Already-uploaded screenshots persist across runs, so skip the ones present.
+    const already = Math.max(0, (await shotCount()) - 1); // -1 for the account avatar
+    if (already > 0) {
+        console.log(`  (${already} screenshot(s) already uploaded, skipping those)`);
+    }
+
     let seen = await shotCount();
     let shotsFailed = false;
-    for (const [index, shot] of shots.entries()) {
+    for (const [index, shot] of shots.slice(already).entries()) {
       try {
-        await step(page, `screenshot ${index + 1}/${shots.length}`, async () => {
-            const dropped = await dropFile(page, 'Up to a maximum of 5', shot);
-            if (dropped !== 'dropped') throw new Error('no screenshot drop zone found');
+        await step(page, `screenshot ${already + index + 1}/${shots.length}`, async () => {
+            // First zone in DOM order is the screenshots slot; the next two are the
+            // promo tiles, which take different dimensions.
+            await uploadImage(page, page.locator('text=/Drop image here/i').first(), shot);
 
             for (let waited = 0; waited < 25000; waited += 1000) {
                 await page.waitForTimeout(1000);
@@ -298,7 +331,7 @@ async function tagFileInput(page, marker, tag) {
       }
     }
     if (shotsFailed) {
-        console.log('  (drag store-assets/screenshots/*.png in by hand — see header note)');
+        console.log('  (upload the rest of store-assets/screenshots/*.png by hand)');
     }
 
     // --- store icon --------------------------------------------------------
@@ -307,8 +340,9 @@ async function tagFileInput(page, marker, tag) {
         await step(page, 'upload store icon', async () => {
             const icon = path.join(ROOT, 'extension/images/icon-128.png');
             if (!fs.existsSync(icon)) throw new Error('extension/images/icon-128.png missing');
-            const dropped = await dropFile(page, 'Store icon', icon);
-            if (dropped !== 'dropped') throw new Error('no icon drop zone (already set?)');
+            const zone = page.locator('text=/Drop icon here/i').first();
+            if ((await zone.count()) === 0) throw new Error('icon already set');
+            await uploadImage(page, zone, icon);
             await page.waitForTimeout(9000);
         });
     } catch {
@@ -375,6 +409,59 @@ async function tagFileInput(page, marker, tag) {
         }
         if (missed.length) {
             console.log(`  (fill by hand from listing.json: ${missed.join(', ')})`);
+        }
+
+        // "Are you using remote code?" — No. The CSP is script-src 'self'
+        // 'wasm-unsafe-eval' and everything executed ships inside the package.
+        // It still wants a justification even when the answer is no.
+        try {
+            await step(page, 'remote code: no', async () => {
+                const picked = await page.evaluate(() => {
+                    const el = [...document.querySelectorAll('*')].find(
+                        n =>
+                            n.children.length === 0 &&
+                            /^No, I am not using remote code$/i.test((n.textContent || '').trim()),
+                    );
+                    if (!el) return false;
+                    el.scrollIntoView({ block: 'center' });
+                    el.click();
+                    return true;
+                });
+                if (!picked) throw new Error('no "not using remote code" option');
+                await page.waitForTimeout(2000);
+
+                const field = await fieldByLabel(page, 'Justification');
+                if (field) {
+                    await field.scrollIntoViewIfNeeded();
+                    await field.fill(listing.permissionJustifications.remoteCode);
+                }
+            });
+        } catch {
+            console.log('  (answer the remote code question by hand)');
+        }
+
+        // The three Developer Program Policy certifications. They are the
+        // publisher's declaration, and each one is true of this extension: no
+        // analytics, no telemetry, no backend, nothing sold or transferred.
+        try {
+            await step(page, 'data usage certifications', async () => {
+                const ticked = await page.evaluate(() => {
+                    let count = 0;
+                    for (const box of document.querySelectorAll('[role=checkbox]')) {
+                        const label = box.closest('label')?.innerText || '';
+                        if (!/^I do not/i.test(label.trim())) continue;
+                        if (box.getAttribute('aria-checked') === 'true') continue;
+                        box.scrollIntoView({ block: 'center' });
+                        box.click();
+                        count += 1;
+                    }
+                    return count;
+                });
+                await page.waitForTimeout(2000);
+                if (ticked === 0) throw new Error('no unticked certifications found');
+            });
+        } catch {
+            console.log('  (tick the three data-usage certifications by hand)');
         }
 
         if (listing.privacyPolicyUrl) {
