@@ -20,23 +20,30 @@ npm run release        # build and verify the package
 npm run store:draft    # uploads the package and screenshots, fills the listing
 ```
 
-`store:login` opens the dashboard in a dedicated Chrome profile at `.store-profile/` and waits
-while you sign in. It never types a password — it only watches for the dashboard to appear, then
-saves the profile so `store:draft` can reuse the session. The profile holds live Google cookies and
-is gitignored.
+`store:login` starts Chrome on the dashboard using a dedicated profile at `.store-profile/` and waits
+while you sign in. It never types a password. **Leave that window open** — `store:draft` attaches to
+it. The profile holds live Google cookies and is gitignored.
 
-Two things worth knowing:
+Three things worth knowing:
 
+- **Chrome must not be launched *by* Playwright for the sign-in.** Doing so applies
+  `--enable-automation`, which raises the "controlled by automated test software" banner, and Google
+  then refuses the sign-in outright: *"This browser or app may not be secure."* So `store:login`
+  starts Chrome as an ordinary browser with one extra flag, `--remote-debugging-port`, which enables
+  an API rather than suppressing a check. You sign in through the normal, un-automated flow and the
+  tooling attaches to the session afterwards. Nothing tries to make the browser look less automated —
+  if Google still declines, upload by hand.
 - **This works where a browser extension cannot.** Chrome blocks extensions from scripting the Web
-  Store gallery outright; Playwright drives the browser over CDP, which that restriction does not
-  cover. It launches your real Chrome (`channel: 'chrome'`) rather than bundled Chromium, because
-  Google is far more willing to complete a sign-in there.
+  Store gallery outright; driving Chrome over CDP is not covered by that restriction.
 - **`store:draft` stops at "save draft" and never submits for review.** Publishing is a decision,
   not a build step. Watch the first run: the dashboard is an unversioned Google app whose DOM shifts
   without notice, so any step that cannot find its target writes a screenshot and the page HTML to
   `store-assets/debug/` and stops rather than clicking the wrong thing.
 
 Pass `--item <id>` (or set `CWS_ITEM_ID`) to edit an existing listing instead of creating a new one.
+
+If attaching fails, it is almost always another Chrome already holding `.store-profile/` — a second
+launch just hands the URL to that instance and never opens the debugging port. Close it and retry.
 
 ---
 

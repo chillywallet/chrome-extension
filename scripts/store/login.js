@@ -3,55 +3,60 @@
  *
  *   npm run store:login
  *
- * Opens the Developer Dashboard in the dedicated .store-profile/ Chrome profile and
- * waits while you sign in by hand. Nothing here types a password or touches your
- * credentials — it only watches for the dashboard to appear and then saves the
- * profile, so `npm run store:draft` can reuse the session.
+ * Starts Chrome as an ordinary browser — no automation flags, no "controlled by
+ * automated test software" banner — pointed at the Developer Dashboard, and waits
+ * while you sign in by hand.
  *
- * Close the window when you are done, or leave it and this exits on its own once it
- * sees you are through.
+ * Nothing here types a password or touches your credentials. The only unusual flag
+ * is --remote-debugging-port, which enables an API rather than suppressing any
+ * check; the sign-in itself is entirely yours. Once it sees the dashboard, the
+ * session is in .store-profile/ and `npm run store:draft` can reuse it.
+ *
+ * Leave the window open afterwards: store:draft attaches to this same browser.
  */
-const { launch, isSignedIn, DASHBOARD, PROFILE } = require('./lib');
+const { spawnChrome, attach, isSignedIn, DASHBOARD, PROFILE, CDP_PORT } = require('./lib');
 
 const TIMEOUT_MS = 15 * 60 * 1000;
 const POLL_MS = 3000;
 
 (async () => {
-    const context = await launch({ headless: false });
-    const page = context.pages()[0] ?? (await context.newPage());
+    console.log('\nStarting Chrome on the Developer Dashboard.');
+    console.log('Sign in there as you normally would, including any 2FA.');
+    console.log('This script only watches for the dashboard to load.\n');
 
-    await page.goto(DASHBOARD).catch(() => {});
+    spawnChrome(DASHBOARD);
 
-    console.log('\nA Chrome window is open on the Developer Dashboard.');
-    console.log('Sign in there as you normally would — including any 2FA.');
-    console.log('This script is only watching for the dashboard to load.\n');
+    const { browser, context } = await attach({ timeoutMs: 60000 });
+    console.log(`attached on port ${CDP_PORT}\n`);
 
     const deadline = Date.now() + TIMEOUT_MS;
     let signedIn = false;
 
     while (Date.now() < deadline) {
-        // The user closing the window is a perfectly good way to finish.
-        if (context.pages().length === 0) break;
+        const pages = context.pages();
+        if (pages.length === 0) break;
 
+        const page = pages.find(p => p.url().includes('chrome.google.com')) ?? pages[0];
         signedIn = await isSignedIn(page).catch(() => false);
         if (signedIn) break;
 
-        await page.waitForTimeout(POLL_MS);
+        await new Promise(resolve => setTimeout(resolve, POLL_MS));
     }
 
     if (signedIn) {
         console.log('signed in — session saved to .store-profile/');
-        console.log('next: npm run store:draft\n');
+        console.log('LEAVE THIS CHROME WINDOW OPEN, then run:  npm run store:draft\n');
     } else {
-        console.log('did not detect a signed-in dashboard.');
-        console.log('If you did sign in, the session is still saved; just run store:draft.\n');
+        console.log('did not detect a signed-in dashboard within the timeout.');
+        console.log('If you did sign in, the session is saved anyway — try store:draft.\n');
     }
 
-    await context.close();
+    // Detach without closing: the window is the session store:draft attaches to.
+    await browser.close();
     process.exit(signedIn ? 0 : 1);
 })().catch(error => {
-    console.error(error);
-    console.error(`\nprofile: ${PROFILE}`);
-    console.error('If Chrome refused to launch, close any Chrome running from this profile.');
+    console.error(`\n${error.message}`);
+    console.error(`profile: ${PROFILE}`);
+    console.error('If Chrome would not start, close any Chrome already using that profile.');
     process.exit(1);
 });

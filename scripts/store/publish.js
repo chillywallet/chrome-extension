@@ -21,9 +21,8 @@
  * moves without notice, so any step that cannot find its target dumps a screenshot and
  * the page HTML into store-assets/debug/ and stops rather than clicking something else.
  */
-const fs = require('fs');
 const {
-    launch,
+    attach,
     isSignedIn,
     step,
     DASHBOARD,
@@ -34,7 +33,6 @@ const {
 
 const args = process.argv.slice(2);
 const itemId = (args.includes('--item') ? args[args.indexOf('--item') + 1] : '') || process.env.CWS_ITEM_ID || '';
-const headless = args.includes('--headless');
 
 /** Try each locator in turn; the dashboard labels the same field differently over time. */
 async function firstVisible(page, buildLocators) {
@@ -66,17 +64,23 @@ async function firstVisible(page, buildLocators) {
         console.log('      submission without one. The draft can still be saved.\n');
     }
 
-    const context = await launch({ headless });
-    const page = context.pages()[0] ?? (await context.newPage());
+    // Attaches to the Chrome that store:login left open, so the session is one a
+    // human established rather than one this script tried to obtain.
+    const { browser, context } = await attach();
+    const page =
+        context.pages().find(p => p.url().includes('chrome.google.com')) ??
+        context.pages()[0] ??
+        (await context.newPage());
 
+    await page.bringToFront().catch(() => {});
     await page.goto(itemId ? `${DASHBOARD}/${itemId}/edit` : DASHBOARD, {
         waitUntil: 'domcontentloaded',
     });
     await page.waitForTimeout(4000);
 
     if (!(await isSignedIn(page))) {
-        console.error('not signed in — run `npm run store:login` first');
-        await context.close();
+        console.error('not signed in — run `npm run store:login` first and sign in');
+        await browser.close();
         process.exit(1);
     }
     console.log('signed in\n');
@@ -152,12 +156,8 @@ async function firstVisible(page, buildLocators) {
     console.log('  - permission justifications (text in store-assets/listing.json)');
     console.log('  - reviewer notes, including a funded testnet seed phrase');
 
-    if (!headless) {
-        console.log('\nLeaving the window open for 60s so you can look it over.');
-        await page.waitForTimeout(60000);
-    }
-
-    await context.close();
+    // Detach rather than close — the window stays yours to review and finish in.
+    await browser.close();
 })().catch(error => {
     console.error(`\n${error.message}`);
     console.error('see store-assets/debug/ for a screenshot and the page HTML');
