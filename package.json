@@ -119,6 +119,8 @@
         "build-dev-static": "sh ./scripts/build.sh dev dev.webpack.config.js  static-key",
         "verify-package": "node ./scripts/verify-package.js build/prod",
         "release": "npm run build-prod && npm run verify-package",
+        "store:login": "node ./scripts/store/login.js",
+        "store:draft": "node ./scripts/store/publish.js",
         "typecheck": "tsc --noEmit",
         "test": "craco test --watchAll=false",
         "test:watch": "craco test",

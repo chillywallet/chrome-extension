@@ -1,0 +1,32 @@
+{
+    "_comment": "Canonical field values for the Chrome Web Store listing. scripts/store/publish.js reads this; store-assets/README.md is the human-readable walkthrough of the same content. Edit here first.",
+
+    "name": "Chilly Wallet",
+
+    "summary": "A cool multi-chain crypto wallet. Self-contained, backend-free, and open: your keys never leave your device.",
+
+    "description": "Chilly Wallet is a self-custodial crypto wallet for the EVM ecosystem, built to stay out of your way.\n\nYour keys never leave your device. There is no Chilly account, no login, and no server of ours behind the wallet — the extension talks to public blockchain infrastructure directly from your browser.\n\n40 EVM networks, one wallet\nEthereum, Base, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche, ZKsync Era, Scroll, Linea, Blast, Zora, Mode, Metis, Ink, Soneium, Lisk, Aurora, Gnosis, Celo, Unichain, BOB, Degen, Plume, Taiko, World Chain, Mantle, opBNB, Sonic, Berachain, Sei, ApeChain, HyperEVM, Katana, Plasma, Abstract, Moonbeam, Moonriver, XDC and Monad — plus test networks for development.\n\nWhat you can do\n• Hold, send and receive tokens and NFTs across every supported network\n• Swap tokens through an on-chain aggregator, on the networks that support it\n• Connect to any dapp that speaks EIP-1193, with per-site permissions you can revoke\n• Track prices and portfolio value, with charts per coin\n• Stake into liquid staking protocols on Monad\n• Use a Ledger or Trezor for hardware-backed accounts\n• Resolve human-readable names instead of pasting hex addresses\n• Work from the popup or the Chrome side panel, whichever suits you\n\nBuilt to be inspected\nNo analytics. No telemetry. No ads. No tracking. No remote code — everything that runs is in the package you install. The source is open, so none of this has to be taken on trust.\n\nSelf-custody means you are responsible for your recovery phrase. Write it down and keep it offline: if you lose it, nobody — including us — can restore your funds.",
+
+    "category": "Productivity",
+    "language": "English (United States)",
+
+    "singlePurpose": "Chilly Wallet is a self-custodial cryptocurrency wallet. It stores the user's keys locally, shows their balances and transaction history across EVM networks, and lets them sign and send transactions, including to websites that request a wallet connection.",
+
+    "privacyPolicyUrl": "",
+
+    "permissionJustifications": {
+        "storage": "Stores the encrypted wallet vault, accounts, contacts and settings on the user's device. The wallet has no backend, so this is the only place its state exists.",
+        "unlimitedStorage": "Cached balances, transaction history and NFT metadata across 40 networks exceed the default quota for a wallet holding many assets.",
+        "offscreen": "Ledger and Trezor support needs WebHID and an iframe, neither of which is available in an MV3 service worker. The offscreen document hosts those bridges.",
+        "sidePanel": "The wallet can be opened in Chrome's side panel so it stays visible next to a dapp instead of closing when the popup loses focus.",
+        "activeTab": "Used to identify the tab a connection or signature request came from, so the confirmation prompt can show the user which site is asking.",
+        "clipboardWrite": "Copies addresses, transaction hashes and the recovery phrase to the clipboard on an explicit user action.",
+        "webNavigation": "Detects navigation in order to run the bundled phishing check against a locally shipped domain list, and to re-establish the provider connection after the MV3 service worker restarts.",
+        "hostPermissions": "A wallet cannot know in advance which sites a user will connect to, so the provider script must be available on any page. The script only exposes the EIP-1193 connection interface; it does not read page content, and a site sees nothing until the user approves a connection.",
+        "remoteCode": "None. Everything executed ships inside the package. The CSP is script-src 'self' 'wasm-unsafe-eval'."
+    },
+
+    "dataUsageJustification": "The extension has no backend and contains no analytics or telemetry. It queries third-party public APIs — block explorers, price feeds, a swap aggregator and RPC nodes — directly from the user's browser. Those services can observe a wallet address and IP address as an inherent property of the request. This is disclosed in the privacy policy.",
+
+    "reviewerNotes": "Chilly Wallet is a self-custodial EVM wallet. There is no backend, no account and no login — the extension talks to public blockchain APIs directly from the browser.\n\nThe broad host permissions exist solely so the EIP-1193 provider script can be exposed on any page a user might connect a dapp from. The script reads no page content, and a site receives nothing until the user explicitly approves a connection.\n\nTo exercise the wallet, import this testnet recovery phrase during onboarding and set any PIN:\n<PASTE A FUNDED TESTNET SEED PHRASE HERE — NEVER A MAINNET ONE>"
+}

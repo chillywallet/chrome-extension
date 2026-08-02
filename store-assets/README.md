@@ -9,6 +9,35 @@ The package itself comes from `npm run release`, which builds and then verifies 
 Screenshots are in `screenshots/`, already at the required 1280×800. Regenerate them with
 `node scripts/render-store-screenshots.js` (needs `npm run debug:build` first).
 
+## Automating it
+
+`listing.json` holds the same field values in machine-readable form, and is what the automation
+reads — **edit it first**, then mirror any change into the blocks below.
+
+```bash
+npm run store:login    # you sign in by hand, once
+npm run release        # build and verify the package
+npm run store:draft    # uploads the package and screenshots, fills the listing
+```
+
+`store:login` opens the dashboard in a dedicated Chrome profile at `.store-profile/` and waits
+while you sign in. It never types a password — it only watches for the dashboard to appear, then
+saves the profile so `store:draft` can reuse the session. The profile holds live Google cookies and
+is gitignored.
+
+Two things worth knowing:
+
+- **This works where a browser extension cannot.** Chrome blocks extensions from scripting the Web
+  Store gallery outright; Playwright drives the browser over CDP, which that restriction does not
+  cover. It launches your real Chrome (`channel: 'chrome'`) rather than bundled Chromium, because
+  Google is far more willing to complete a sign-in there.
+- **`store:draft` stops at "save draft" and never submits for review.** Publishing is a decision,
+  not a build step. Watch the first run: the dashboard is an unversioned Google app whose DOM shifts
+  without notice, so any step that cannot find its target writes a screenshot and the page HTML to
+  `store-assets/debug/` and stops rather than clicking the wrong thing.
+
+Pass `--item <id>` (or set `CWS_ITEM_ID`) to edit an existing listing instead of creating a new one.
+
 ---
 
 ## 1. Package
