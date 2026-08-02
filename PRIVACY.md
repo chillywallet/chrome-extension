@@ -1,6 +1,6 @@
 # Chilly Wallet — Privacy Policy
 
-**Last updated: 1 August 2026**
+**Last updated: 2 August 2026**
 
 Chilly Wallet is a self-custodial crypto wallet that runs entirely inside your browser. It has no
 backend of its own: there is no Chilly account, no login, no sync service, and no server operated by
@@ -79,4 +79,5 @@ a subsequent release. The current version is always the one in this repository.
 
 ## Contact
 
-Questions about this policy can be raised as an issue on the project's GitHub repository.
+Questions about this policy can be sent to **support@chillywallet.com**, or raised as an issue on
+the project's GitHub repository at <https://github.com/chillywallet/chrome-extension>.

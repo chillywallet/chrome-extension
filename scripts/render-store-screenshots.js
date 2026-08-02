@@ -27,6 +27,14 @@ const EXTENSION = path.join(ROOT, 'build/debug');
 const SESSION = path.join(ROOT, 'test-results/session');
 const OUT = path.join(ROOT, 'store-assets/screenshots');
 
+/**
+ * The bare popup captures, before the store frame and its burnt-in headline are
+ * composed on top. The marketing site wants these rather than the framed versions:
+ * it draws its own frame on its own background, and a caption baked into the pixels
+ * cannot be re-worded or translated. Gitignored — regenerate with this script.
+ */
+const RAW_OUT = path.join(OUT, 'raw');
+
 require('dotenv').config({ path: path.join(ROOT, '.env.debug') });
 const PIN = process.env.PLAYWRIGHT_PIN_CODE;
 
@@ -133,6 +141,7 @@ const framePage = (dataUri, caption) => `
         process.exit(1);
     }
     fs.mkdirSync(OUT, { recursive: true });
+    fs.mkdirSync(RAW_OUT, { recursive: true });
 
     const context = await chromium.launchPersistentContext(SESSION, {
         headless: false,
@@ -204,7 +213,9 @@ const framePage = (dataUri, caption) => `
         await page.addStyleTag({ content: HIDE_SCROLLBARS });
         await page.waitForTimeout(400);
 
+        // 800x1280 at deviceScaleFactor 2 — the unframed UI, kept for the website.
         const raw = await page.screenshot();
+        fs.writeFileSync(path.join(RAW_OUT, `${shot.file}.png`), raw);
 
         // Frame it at store size in a throwaway page rather than stretching the popup.
         const framer = await framerContext.newPage();

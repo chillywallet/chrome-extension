@@ -84,3 +84,13 @@ with `npm run debug:build`. It reads `PLAYWRIGHT_PIN_CODE` and
 must be at least 8 characters). An `ETHERSCAN_API_KEY` entry in `.env.debug`
 unlocks the chains whose data provider needs a key (Monad, BSC, and their
 testnets). Specs share one wallet session and run serially.
+
+## Licence
+
+The code is MIT — see [LICENSE](LICENSE). Fork it, change it, ship it.
+
+The Chilly name, the penguin mark and the wordmarks are **not** covered by that licence.
+A self-custodial wallet is identified by its name and icon, so a derivative has to carry
+its own. This is the same split Mozilla and Signal use, and it is the reason the in-app
+network badges are generated monograms rather than official chain logos: the project does
+not redistribute marks it has no licence for, and asks the same in return.
