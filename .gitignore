@@ -24,3 +24,11 @@ yarn-error.log*
 
 /playwright-report
 /test-results
+
+# Chrome profile holding the Web Store dashboard login. Contains live Google
+# session cookies — never commit it.
+/.store-profile
+# Diagnostic captures written when a store automation step cannot find something.
+/store-assets/debug
+# Unframed popup captures for the marketing site; regenerate with render-store-screenshots.js.
+/store-assets/screenshots/raw
