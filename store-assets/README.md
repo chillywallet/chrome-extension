@@ -72,27 +72,31 @@ A cool multi-chain crypto wallet. Self-contained, backend-free, and open: your k
 
 **Description**
 
+> **Do not list the supported networks by name here.** The first submission was rejected under
+> _Spam and Placement in the Store_ (reference "Yellow Argon") for "having excessive keywords in the
+> item's description", and the text Google quoted back was the paragraph naming all 40 chains. Name a
+> few networks descriptively at most, and link chillywallet.com for the full list.
+
 ```
 Chilly Wallet is a self-custodial crypto wallet for the EVM ecosystem, built to stay out of your way.
 
 Your keys never leave your device. There is no Chilly account, no login, and no server of ours behind
 the wallet — the extension talks to public blockchain infrastructure directly from your browser.
 
-40 EVM networks, one wallet
-Ethereum, Base, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche, ZKsync Era, Scroll, Linea, Blast,
-Zora, Mode, Metis, Ink, Soneium, Lisk, Aurora, Gnosis, Celo, Unichain, BOB, Degen, Plume, Taiko,
-World Chain, Mantle, opBNB, Sonic, Berachain, Sei, ApeChain, HyperEVM, Katana, Plasma, Abstract,
-Moonbeam, Moonriver, XDC and Monad — plus test networks for development.
+One wallet, forty networks
+Ethereum, Base, Arbitrum and the rest of the supported networks are built in and ready to use, so
+there is nothing to add by hand and no RPC details to paste. Switch between them from a single menu.
+The full list is on chillywallet.com.
 
 What you can do
-• Hold, send and receive tokens and NFTs across every supported network
+• Hold, send and receive tokens and NFTs
 • Swap tokens through an on-chain aggregator, on the networks that support it
 • Connect to any dapp that speaks EIP-1193, with per-site permissions you can revoke
-• Track prices and portfolio value, with charts per coin
+• Track prices and portfolio value, with a chart for every coin you hold
 • Stake into liquid staking protocols on Monad
 • Use a Ledger or Trezor for hardware-backed accounts
-• Resolve human-readable names instead of pasting hex addresses
-• Work from the popup or the Chrome side panel, whichever suits you
+• Resolve readable names instead of pasting hex addresses
+• Work from the toolbar popup or the Chrome side panel, whichever suits you
 
 Built to be inspected
 No analytics. No telemetry. No ads. No tracking. No remote code — everything that runs is in the
